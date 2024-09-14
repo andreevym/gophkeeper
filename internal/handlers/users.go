@@ -52,6 +52,26 @@ func (h *ServiceHandlers) PostSignUp(writer http.ResponseWriter, request *http.R
 		return
 	}
 
+	if signUpRequest.Login == "" || len(signUpRequest.Login) > 50 {
+		logger.Logger().Warn("login is empty or too long more than 50 characters", zap.Int("LoginLen", len(signUpRequest.Login)))
+		writer.WriteHeader(http.StatusBadRequest)
+		_, err := io.WriteString(writer, fmt.Sprintf("login is empty or too long more than 50 characters but actual len is %d", len(signUpRequest.Login)))
+		if err != nil {
+			logger.Logger().Warn("failed to write response", zap.Error(err))
+		}
+		return
+	}
+
+	if signUpRequest.Password == "" || len(signUpRequest.Password) > 50 {
+		logger.Logger().Warn("password is empty or too long more than 50 characters", zap.Int("PasswordLen", len(signUpRequest.Password)))
+		writer.WriteHeader(http.StatusBadRequest)
+		_, err := io.WriteString(writer, fmt.Sprintf("password is empty or too long more than 50 characters but actual len is %d", len(signUpRequest.Password)))
+		if err != nil {
+			logger.Logger().Warn("failed to write response", zap.Error(err))
+		}
+		return
+	}
+
 	_, err = h.userStorage.GetUserByLogin(ctx, signUpRequest.Login)
 	if err != nil && !errors.Is(storage2.ErrUserNotFound, err) {
 		logger.Logger().Warn("failed to get user by login", zap.String("login", signUpRequest.Login), zap.Error(err))
@@ -63,7 +83,7 @@ func (h *ServiceHandlers) PostSignUp(writer http.ResponseWriter, request *http.R
 		return
 	}
 
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(signUpRequest.Password), bcrypt.MaxCost)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(signUpRequest.Password), bcrypt.MinCost)
 	if err != nil {
 		logger.Logger().Warn("failed to generate hash from password", zap.String("login", signUpRequest.Login), zap.Error(err))
 		writer.WriteHeader(http.StatusBadRequest)

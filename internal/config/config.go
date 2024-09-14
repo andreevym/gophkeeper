@@ -11,7 +11,7 @@ import (
 
 type ServerConfig struct {
 	Address      string `env:"ADDRESS"`
-	DatabaseURI  string `env:"DATABASE_URI" envDefault:"postgres://dev-backend:dev-backend@postgres:5432/dev-backend?sslmode=disable"`
+	DatabaseURI  string `env:"DATABASE_URI" envDefault:"postgres://gophkeeper:gophkeeper@localhost:5432/gophkeeper?sslmode=disable"`
 	LogLevel     string `env:"LOG_LEVEL"`
 	JWTSecretKey string `env:"JWT_SECRET_KEY"`
 }

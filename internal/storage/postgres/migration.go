@@ -25,8 +25,8 @@ func ApplyMigration(ctx context.Context, db *sqlx.DB, sql string) error {
 	return nil
 }
 
-func Migration(ctx context.Context, db *sqlx.DB) error {
-	err := filepath.Walk("migrations", func(path string, info fs.FileInfo, err error) error {
+func Migration(ctx context.Context, migrationPath string, db *sqlx.DB) error {
+	err := filepath.Walk(migrationPath, func(path string, info fs.FileInfo, err error) error {
 		if !info.IsDir() {
 			logger.Logger().Info("apply migration", zap.String("path", path))
 			bytes, err := os.ReadFile(path)

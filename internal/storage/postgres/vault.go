@@ -72,7 +72,9 @@ func (s VaultStorage) CreateVault(ctx context.Context, v storage.Vault) (storage
 		return storage.Vault{}, fmt.Errorf("failed to create vault object: %w", err)
 	}
 
-	_, err = tx.Exec(ctx, "INSERT INTO vault (key, value, user_id) VALUES ($1, $2, $3) RETURNING id", v.Key, oid, v.UserID)
+	var vaultID uint64
+
+	err = tx.QueryRow(ctx, "INSERT INTO vault (key, value, user_id) VALUES ($1, $2, $3) RETURNING id", v.Key, oid, v.UserID).Scan(&vaultID)
 	if err != nil {
 		return storage.Vault{}, fmt.Errorf("failed to create vault %s: %w", v.Key, err)
 	}
@@ -90,7 +92,16 @@ func (s VaultStorage) CreateVault(ctx context.Context, v storage.Vault) (storage
 	}
 
 	err = tx.Commit(ctx)
-	return storage.Vault{}, err
+	if err != nil {
+		return storage.Vault{}, fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return storage.Vault{
+		ID:     vaultID,
+		Key:    v.Key,
+		Value:  v.Value,
+		UserID: v.UserID,
+	}, err
 }
 
 func (s VaultStorage) UpdateVault(ctx context.Context, v storage.Vault) error {
@@ -107,7 +118,7 @@ func (s VaultStorage) UpdateVault(ctx context.Context, v storage.Vault) error {
 		return fmt.Errorf("failed to create vault object: %w", err)
 	}
 
-	_, err = s.db.ExecContext(ctx, "UPDATE vault SET key = $2, value = $3 WHERE id = $1", v.ID, v.Key, oid)
+	_, err = tx.Exec(ctx, "UPDATE vault SET key = $2, value = $3 WHERE id = $1", v.ID, v.Key, oid)
 	if err != nil {
 		return fmt.Errorf("failed to update vault by id %d, key %s: %w", v.ID, v.Key, err)
 	}

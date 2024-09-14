@@ -56,20 +56,32 @@ func main() {
 
 	db, err := sqlx.Connect("postgres", cfg.DatabaseURI)
 	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
+		log.Fatalf("Failed to connect to database, database uri %s : %v", cfg.DatabaseURI, err)
 	}
 	defer db.Close()
 
 	ctx := context.Background()
 
-	conn, err := pgx.Connect(ctx, "user=postgres host=/run/postgresql dbname=postgres")
+	conn, err := pgx.Connect(ctx, cfg.DatabaseURI)
 	if err != nil {
-		panic(err)
+		log.Fatalf("Failed to connect to database, database uri %s : %v", cfg.DatabaseURI, err)
 	}
 	defer conn.Close(ctx)
 
+	err = postgres.Migration(ctx, "migrations", db)
+	if err != nil {
+		log.Fatalf("Failed to migrate database, database uri %s : %v", cfg.DatabaseURI, err)
+	}
+
 	vaultStorage := postgres.NewVaultStorage(db, conn)
 	userStorage := postgres.NewUserStorage(db)
+
+	if cfg.JWTSecretKey == "" {
+		_, cfg.JWTSecretKey, err = auth.MakeJwtSecretKey()
+		if err != nil {
+			log.Fatalf("Failed to generate JWT secret key: %v", err)
+		}
+	}
 
 	jwtPrivateKey, err := auth.ReadJwtSecretKey(cfg.JWTSecretKey)
 	if err != nil {

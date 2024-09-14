@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/andreevym/gophkeeper/internal/storage"
 	"github.com/andreevym/gophkeeper/internal/storage/postgres"
+	"log"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -12,19 +13,25 @@ import (
 )
 
 func TestVaultRepository(t *testing.T) {
-	require.NotNil(t, testDB)
+	db := postgres.NewDB()
+	defer db.TeardownDB()
+	err := db.SetupDB("../../migrations")
+	if err != nil {
+		log.Fatalf("Could not setup postgres container: %v", err)
+	}
+
 	ctx := context.Background()
-	err := testDB.PingContext(ctx)
+	err = db.DB.PingContext(ctx)
 	require.NoError(t, err)
 
-	userStorage := postgres.NewUserStorage(testDB)
+	userStorage := postgres.NewUserStorage(db.DB)
 	u, err := userStorage.CreateUser(ctx, storage.User{
 		Login:    "test",
 		Password: "test",
 	})
 	require.NoError(t, err)
 
-	vaultStorage := postgres.NewVaultStorage(testDB, conn)
+	vaultStorage := postgres.NewVaultStorage(db.DB, db.Conn)
 
 	vault1 := storage.Vault{
 		Key:    "k1",

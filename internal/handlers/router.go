@@ -69,7 +69,7 @@ func NewRouter(s *ServiceHandlers, middlewares ...func(http.Handler) http.Handle
 	r.Post(AuthSignUpURI, s.PostSignUp)
 
 	r.Post(VaultURI, s.PostVault)
-	r.Get(VaultURI, s.GetVault)
+	r.Get(VaultURI+"/{vaultID}", s.GetVault)
 
 	r.Get(PingURI, s.GetPingHandler)
 

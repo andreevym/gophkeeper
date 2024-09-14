@@ -57,7 +57,7 @@ func (h *ServiceHandlers) PostVault(writer http.ResponseWriter, request *http.Re
 			Value:  vaultRequest.Value,
 			UserID: user.ID,
 		}
-		_, err = h.vaultStorage.CreateVault(ctx, vault)
+		vault, err = h.vaultStorage.CreateVault(ctx, vault)
 		if err != nil {
 			writer.WriteHeader(http.StatusBadRequest)
 			_, err := io.WriteString(writer, err.Error())
@@ -65,6 +65,19 @@ func (h *ServiceHandlers) PostVault(writer http.ResponseWriter, request *http.Re
 				logger.Logger().Warn("failed to write response", zap.Error(err))
 			}
 			return
+		}
+
+		bytes, err := json.Marshal(vault)
+		if err != nil {
+			_, err := io.WriteString(writer, err.Error())
+			if err != nil {
+				logger.Logger().Warn("failed to write response", zap.Error(err))
+			}
+			return
+		}
+		_, err = writer.Write(bytes)
+		if err != nil {
+			logger.Logger().Warn("failed to write response", zap.Error(err))
 		}
 		writer.WriteHeader(http.StatusCreated)
 		return
@@ -117,6 +130,18 @@ func (h *ServiceHandlers) PostVault(writer http.ResponseWriter, request *http.Re
 		return
 	}
 
+	bytes, err = json.Marshal(v)
+	if err != nil {
+		_, err := io.WriteString(writer, err.Error())
+		if err != nil {
+			logger.Logger().Warn("failed to write response", zap.Error(err))
+		}
+		return
+	}
+	_, err = writer.Write(bytes)
+	if err != nil {
+		logger.Logger().Warn("failed to write response", zap.Error(err))
+	}
 	writer.WriteHeader(http.StatusOK)
 }
 
@@ -170,7 +195,15 @@ func (h *ServiceHandlers) GetVault(writer http.ResponseWriter, request *http.Req
 		return
 	}
 
-	_, err = io.WriteString(writer, fmt.Sprintf("%v", v))
+	bytes, err := json.Marshal(v)
+	if err != nil {
+		_, err := io.WriteString(writer, err.Error())
+		if err != nil {
+			logger.Logger().Warn("failed to write response", zap.Error(err))
+		}
+		return
+	}
+	_, err = writer.Write(bytes)
 	if err != nil {
 		logger.Logger().Warn("failed to write response", zap.Error(err))
 		writer.WriteHeader(http.StatusBadRequest)
