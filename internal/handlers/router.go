@@ -54,7 +54,7 @@ func NewServiceHandlers(
 }
 
 // NewRouter creates a new HTTP router with the specified handlers and tracer.
-func NewRouter(s *ServiceHandlers, middlewares ...func(http.Handler) http.Handler) *chi.Mux {
+func NewRouter(s *ServiceHandlers, m ...func(http.Handler) http.Handler) *chi.Mux {
 	r := chi.NewRouter()
 
 	r.Use(middleware.RequestID)
@@ -62,7 +62,7 @@ func NewRouter(s *ServiceHandlers, middlewares ...func(http.Handler) http.Handle
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.Timeout(60 * time.Second))
-	r.Use(middlewares...)
+	r.Use(m...)
 
 	r.Post(AuthSignInURI, s.PostSignIn)
 	r.Post(AuthSignUpURI, s.PostSignUp)
