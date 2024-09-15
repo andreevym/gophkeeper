@@ -3,25 +3,26 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/andreevym/gophkeeper/internal/handlers"
 	"os"
 	"strings"
 
 	"github.com/andreevym/gophkeeper/internal/client"
-	"github.com/andreevym/gophkeeper/internal/storage"
 )
 
 const (
-	successColor = "\033[32m" // Green
-	errorColor   = "\033[31m" // Red
-	resetColor   = "\033[0m"  // Reset
+	successColor = "\033[32m" // Green color for success messages
+	errorColor   = "\033[31m" // Red color for error messages
+	resetColor   = "\033[0m"  // Reset color to default
 )
 
 // Invoker defines the methods that our Client should implement.
 type Invoker interface {
 	CreateUser(login, password string) error
 	SignIn(login, password string) (string, error)
-	GetVault(token, vaultID string) (storage.Vault, error)
-	NewVault(token, key, value, vaultID string) (storage.Vault, error)
+	GetVault(token, vaultID string) (handlers.VaultResponse, error)
+	NewVault(token, key, value, vaultID string) (handlers.VaultResponse, error)
+	UploadFile(token, filename, filePath, vaultID string) (handlers.VaultResponse, error)
 }
 
 func main() {
@@ -44,28 +45,30 @@ func main() {
 	serverAddress := os.Args[2]
 	c := client.NewClient(serverAddress)
 
-	args := os.Args[2:]
-
 	switch cmd {
 	case "signup":
-		handleSignUp(c, args)
+		handleSignUp(c, os.Args[3:])
 	case "signin":
-		handleSignIn(c, args)
+		handleSignIn(c, os.Args[3:])
 	case "savevault":
-		handleSaveVault(c, args)
+		handleSaveVault(c, os.Args[3:])
 	case "getvault":
-		handleGetVault(c, args)
+		handleGetVault(c, os.Args[3:])
+	case "uploadfile":
+		handleUploadFile(c, os.Args[3:])
 	default:
 		fmt.Printf("%sError: Unknown command '%s'. Use 'help' command for usage.%s\n", errorColor, cmd, resetColor)
 	}
 }
 
+// handleSignUp processes the sign-up command.
+// It requires a username and password to create a new user.
 func handleSignUp(invoker Invoker, args []string) {
-	if len(args) < 3 {
+	if len(args) < 2 {
 		fmt.Printf("%sError: Sign-up command requires username and password.%s\n", errorColor, resetColor)
 		os.Exit(1)
 	}
-	login, password := args[1], args[2]
+	login, password := args[0], args[1]
 	if err := invoker.CreateUser(login, password); err != nil {
 		fmt.Printf("%sError: Failed to create user: %s%s\n", errorColor, err, resetColor)
 		os.Exit(1)
@@ -73,12 +76,14 @@ func handleSignUp(invoker Invoker, args []string) {
 	fmt.Printf("%sUser created successfully%s\n", successColor, resetColor)
 }
 
+// handleSignIn processes the sign-in command.
+// It requires a username and password to authenticate and retrieve a token.
 func handleSignIn(invoker Invoker, args []string) {
-	if len(args) < 3 {
+	if len(args) < 2 {
 		fmt.Printf("%sError: Sign-in command requires username and password.%s\n", errorColor, resetColor)
 		os.Exit(1)
 	}
-	login, password := args[1], args[2]
+	login, password := args[0], args[1]
 	token, err := invoker.SignIn(login, password)
 	if err != nil {
 		fmt.Printf("%sError: Sign-in failed: %s%s\n", errorColor, err, resetColor)
@@ -87,15 +92,17 @@ func handleSignIn(invoker Invoker, args []string) {
 	fmt.Println(token)
 }
 
+// handleSaveVault processes the save vault command.
+// It requires a token, key, and value to create a new vault entry. Optionally, a vault ID can be provided.
 func handleSaveVault(invoker Invoker, args []string) {
-	if len(args) < 4 {
+	if len(args) < 3 {
 		fmt.Printf("%sError: Save vault command requires token, key, and value.%s\n", errorColor, resetColor)
 		os.Exit(1)
 	}
-	token, key, value := args[1], args[2], args[3]
+	token, key, value := args[0], args[1], args[2]
 	vaultID := ""
-	if len(args) == 5 {
-		vaultID = args[4]
+	if len(args) == 4 {
+		vaultID = args[3]
 	}
 	vault, err := invoker.NewVault(token, key, value, vaultID)
 	if err != nil {
@@ -105,12 +112,14 @@ func handleSaveVault(invoker Invoker, args []string) {
 	printVault(vault)
 }
 
+// handleGetVault processes the get vault command.
+// It requires a token and vault ID to retrieve vault details.
 func handleGetVault(invoker Invoker, args []string) {
-	if len(args) < 3 {
+	if len(args) < 2 {
 		fmt.Printf("%sError: Get vault command requires token and vault ID.%s\n", errorColor, resetColor)
 		os.Exit(1)
 	}
-	token, vaultID := args[1], args[2]
+	token, vaultID := args[0], args[1]
 	vault, err := invoker.GetVault(token, vaultID)
 	if err != nil {
 		fmt.Printf("%sError: Failed to get vault: %s%s\n", errorColor, err, resetColor)
@@ -119,7 +128,29 @@ func handleGetVault(invoker Invoker, args []string) {
 	printVault(vault)
 }
 
-func printVault(v storage.Vault) {
+// handleUploadFile processes the upload file command.
+// It requires a token, filename, file path, and optionally a vault ID for updating an existing entry.
+func handleUploadFile(invoker Invoker, args []string) {
+	if len(args) < 3 {
+		fmt.Printf("%sError: Upload file command requires token, filename, and file path.%s\n", errorColor, resetColor)
+		os.Exit(1)
+	}
+	token, filename, filePath := args[0], args[1], args[2]
+	vaultID := ""
+	if len(args) == 4 {
+		vaultID = args[3]
+	}
+
+	vault, err := invoker.UploadFile(token, filename, filePath, vaultID)
+	if err != nil {
+		fmt.Printf("%sError: Failed to upload file: %s%s\n", errorColor, err, resetColor)
+		os.Exit(1)
+	}
+	printVault(vault)
+}
+
+// printVault outputs the vault response in a JSON format.
+func printVault(v handlers.VaultResponse) {
 	b, err := json.Marshal(v)
 	if err != nil {
 		fmt.Printf("%sError: Failed to marshal vault response: %s%s\n", errorColor, err, resetColor)
@@ -128,6 +159,7 @@ func printVault(v storage.Vault) {
 	fmt.Printf("%sVault operation successful: %s%s\n", successColor, string(b), resetColor)
 }
 
+// printHelp displays usage information for the CLI tool.
 func printHelp() {
 	fmt.Println("GophKeeper CLI Help")
 	fmt.Println("---------------------")
@@ -149,14 +181,22 @@ func printHelp() {
 	fmt.Println()
 	fmt.Println("3. Create Vault")
 	fmt.Println("Description: Create a new vault using an authentication token.")
-	fmt.Println("Usage: ./client saveVault <server_url> <token> <key> <value>")
+	fmt.Println("Usage: ./client saveVault <server_url> <token> <key> <value> [<vault_id>]")
 	fmt.Println("Example:")
 	fmt.Println("  ./client saveVault http://localhost:8080 <token> k1 v1")
+	fmt.Println("  ./client saveVault http://localhost:8080 <token> k1 v1 <vault_id>")
 	fmt.Println()
 	fmt.Println("4. Get Vault")
 	fmt.Println("Description: Retrieve vault details using an authentication token and vault ID.")
 	fmt.Println("Usage: ./client getVault <server_url> <token> <vault_id>")
 	fmt.Println("Example:")
 	fmt.Println("  ./client getVault http://localhost:8080 <token> 1")
+	fmt.Println()
+	fmt.Println("5. Upload File")
+	fmt.Println("Description: Upload a binary file to the server using an authentication token.")
+	fmt.Println("Usage: ./client uploadFile <server_url> <token> <filename> <file_path> [<vault_id>]")
+	fmt.Println("Example:")
+	fmt.Println("  ./client uploadFile http://localhost:8080 <token> filename3 /home/user/file.md")
+	fmt.Println("  ./client uploadFile http://localhost:8080 <token> filename3 /home/user/file.md <vault_id>")
 	fmt.Println()
 }

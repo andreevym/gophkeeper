@@ -14,7 +14,6 @@ import (
 	"github.com/andreevym/gophkeeper/internal/handlers"
 	"github.com/andreevym/gophkeeper/internal/middleware"
 	"github.com/andreevym/gophkeeper/internal/pwd"
-	"github.com/andreevym/gophkeeper/internal/storage"
 	"github.com/andreevym/gophkeeper/internal/storage/postgres"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -85,7 +84,9 @@ func TestVaultHandler(t *testing.T) {
 	require.Equal(t, http.StatusCreated, statusCode, "failed to make vault request", string(reqBody), got)
 	assert.Contains(t, got, fmt.Sprintf("{\"id\":1,\"key\":\"key\",\"value\":\"val\",\"user_id\":"))
 
-	vaultResponse := storage.Vault{}
+	require.NotEmpty(t, got)
+
+	vaultResponse := handlers.VaultResponse{}
 	err = json.Unmarshal([]byte(got), &vaultResponse)
 	require.NoError(t, err)
 

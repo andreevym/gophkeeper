@@ -63,7 +63,7 @@ func (s VaultStorage) GetVault(ctx context.Context, id uint64) (storage.Vault, e
 	if err != nil {
 		return storage.Vault{}, fmt.Errorf("failed to read object: %w", err)
 	}
-	v.Value = buffer.String()
+	v.Value = buffer.Bytes()
 	return v, nil
 }
 
@@ -98,7 +98,7 @@ func (s VaultStorage) CreateVault(ctx context.Context, v storage.Vault) (storage
 	}
 
 	// Copy the file stream to the Large Object stream
-	_, err = io.Copy(obj, bytes.NewReader([]byte(v.Value)))
+	_, err = io.Copy(obj, bytes.NewReader(v.Value))
 	if err != nil {
 		return storage.Vault{}, fmt.Errorf("failed to copy vault %s: %w", v.Key, err)
 	}
@@ -145,7 +145,7 @@ func (s VaultStorage) UpdateVault(ctx context.Context, v storage.Vault) error {
 	}
 
 	// Copy the file stream to the Large Object stream
-	_, err = io.Copy(obj, bytes.NewReader([]byte(v.Value)))
+	_, err = io.Copy(obj, bytes.NewReader(v.Value))
 	if err != nil {
 		return fmt.Errorf("failed to copy vault %s: %w", v.Key, err)
 	}

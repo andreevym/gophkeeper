@@ -8,7 +8,7 @@ import (
 type Vault struct {
 	ID     uint64 `json:"id"`      // Unique identifier for the vault.
 	Key    string `json:"key"`     // The key or name of the vault.
-	Value  string `json:"value"`   // The value or content stored in the vault.
+	Value  []byte `json:"value"`   // The value or content stored in the vault.
 	UserID uint64 `json:"user_id"` // The ID of the user who owns the vault.
 }
 

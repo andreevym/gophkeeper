@@ -20,6 +20,14 @@ type VaultRequest struct {
 	Value string `json:"value"` // The value for the vault entry.
 }
 
+// VaultResponse response with string value
+type VaultResponse struct {
+	ID     uint64 `json:"id"`    // The ID of the vault entry. Empty for new entries.
+	Key    string `json:"key"`   // The key for the vault entry.
+	Value  string `json:"value"` // The value for the vault entry.
+	UserID uint64 `json:"user_id"`
+}
+
 // PostVault handles both the creation and update of vault entries.
 //
 // If the ID is empty, a new vault entry is created with the provided Key and Value.
@@ -53,16 +61,21 @@ func (h *ServiceHandlers) PostVault(w http.ResponseWriter, r *http.Request) {
 	if vaultRequest.ID == "" {
 		vault := storage.Vault{
 			Key:    vaultRequest.Key,
-			Value:  vaultRequest.Value,
+			Value:  []byte(vaultRequest.Value),
 			UserID: user.ID,
 		}
-		vault, err = h.vaultStorage.CreateVault(ctx, vault)
+		v, err := h.vaultStorage.CreateVault(ctx, vault)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		bytes, err := json.Marshal(vault)
+		bytes, err := json.Marshal(VaultResponse{
+			ID:     v.ID,
+			Key:    v.Key,
+			Value:  string(v.Value),
+			UserID: v.UserID,
+		})
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
@@ -97,7 +110,7 @@ func (h *ServiceHandlers) PostVault(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if vaultRequest.Value != "" {
-		v.Value = vaultRequest.Value
+		v.Value = []byte(vaultRequest.Value)
 	}
 
 	err = h.vaultStorage.UpdateVault(ctx, v)
@@ -106,7 +119,12 @@ func (h *ServiceHandlers) PostVault(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	bytes, err = json.Marshal(v)
+	bytes, err = json.Marshal(VaultResponse{
+		ID:     v.ID,
+		Key:    v.Key,
+		Value:  string(v.Value),
+		UserID: v.UserID,
+	})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -156,7 +174,12 @@ func (h *ServiceHandlers) GetVault(writer http.ResponseWriter, request *http.Req
 		return
 	}
 
-	bytes, err := json.Marshal(v)
+	bytes, err := json.Marshal(VaultResponse{
+		ID:     v.ID,
+		Key:    v.Key,
+		Value:  string(v.Value),
+		UserID: v.UserID,
+	})
 	if err != nil {
 		http.Error(writer, err.Error(), http.StatusInternalServerError)
 		return

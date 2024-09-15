@@ -35,7 +35,7 @@ func TestVaultRepository(t *testing.T) {
 
 	vault1 := storage.Vault{
 		Key:    "k1",
-		Value:  "v1",
+		Value:  []byte("v1"),
 		UserID: u.ID,
 	}
 
@@ -44,7 +44,7 @@ func TestVaultRepository(t *testing.T) {
 
 	vault2 := storage.Vault{
 		Key:    "k1",
-		Value:  "v1",
+		Value:  []byte("v1"),
 		UserID: u.ID,
 	}
 
@@ -61,7 +61,7 @@ func TestVaultRepository(t *testing.T) {
 	updatedVault1 := storage.Vault{
 		ID:     1,
 		Key:    "k1",
-		Value:  "v2",
+		Value:  []byte("v2"),
 		UserID: u.ID,
 	}
 

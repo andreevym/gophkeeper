@@ -29,6 +29,7 @@ const (
 	AuthSignUpURI = "/api/auth/signup" // AuthSignUpURI is the endpoint for user sign-up.
 	VaultURI      = "/api/vault"       // VaultURI is the endpoint for vault operations.
 	PingURI       = "/api/ping"        // PingURI is the endpoint for health checks.
+	FileUploadURI = "/api/upload"      // FileUploadURI is the endpoint for upload file.
 )
 
 // ServiceHandlers manages HTTP request handlers for the service.
@@ -101,6 +102,9 @@ func NewRouter(s *ServiceHandlers, m ...func(http.Handler) http.Handler) *chi.Mu
 	r.Get(VaultURI+"/{vaultID}", s.GetVault)
 
 	r.Get(PingURI, s.GetPingHandler)
+
+	r.Post(FileUploadURI, s.FileUploadHandler)
+	r.Post(FileUploadURI+"/{vaultID}", s.FileUploadHandler)
 
 	r.Get(RootURI, func(writer http.ResponseWriter, request *http.Request) {
 		writer.Header().Set("Content-Type", "text/html")
