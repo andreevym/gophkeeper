@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/andreevym/gophkeeper/internal/storage"
 	"github.com/andreevym/gophkeeper/pkg/logger"
-	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
 	"io"
 	"net/http"

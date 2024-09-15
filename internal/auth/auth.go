@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"github.com/andreevym/gophkeeper/internal/storage"
 	"github.com/andreevym/gophkeeper/pkg/logger"
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v5"
 	"go.uber.org/zap"
 	"strconv"
 )

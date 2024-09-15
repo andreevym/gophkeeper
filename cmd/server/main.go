@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/andreevym/gophkeeper/internal/pwd"
-	"github.com/jackc/pgx/v4"
 	"log"
 
 	"github.com/andreevym/gophkeeper/internal/auth"
@@ -12,8 +11,9 @@ import (
 	"github.com/andreevym/gophkeeper/internal/handlers"
 	"github.com/andreevym/gophkeeper/internal/middleware"
 	"github.com/andreevym/gophkeeper/internal/server"
-	postgres "github.com/andreevym/gophkeeper/internal/storage/postgres"
+	"github.com/andreevym/gophkeeper/internal/storage/postgres"
 	"github.com/andreevym/gophkeeper/pkg/logger"
+	"github.com/jackc/pgx/v5"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"go.uber.org/zap"

@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/andreevym/gophkeeper/internal/storage"
-	"github.com/jackc/pgx"
+	"github.com/jackc/pgx/v5"
 	"github.com/jmoiron/sqlx"
 	"strings"
 )

@@ -3,12 +3,12 @@ package handlers
 import (
 	"context"
 	"github.com/andreevym/gophkeeper/internal/storage"
+	"github.com/go-chi/chi/v5"
 	"github.com/jmoiron/sqlx"
 	"net/http"
 	"time"
 
-	"github.com/go-chi/chi"
-	"github.com/go-chi/chi/middleware"
+	"github.com/go-chi/chi/v5/middleware"
 )
 
 type Hasher interface {
