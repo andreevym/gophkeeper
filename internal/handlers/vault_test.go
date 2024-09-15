@@ -62,8 +62,8 @@ func TestVaultHandler(t *testing.T) {
 	require.NoError(t, err)
 	header := http.Header{}
 	statusCode, _, got := testRequest(t, ts, http.MethodPost, handlers.AuthSignUpURI, bytes.NewBuffer(reqBody), header)
-	require.Equal(t, http.StatusOK, statusCode, "failed to sign up user", string(reqBody), got)
-	assert.Empty(t, got)
+	require.Equal(t, http.StatusCreated, statusCode, "failed to sign up user", string(reqBody), got)
+	assert.Equal(t, "{\"id\":1,\"login\":\"test\"}", got)
 
 	signInRequest := handlers.SignInRequest{
 		Login:    signUpRequest.Login,

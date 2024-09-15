@@ -42,8 +42,8 @@ func TestUserHandler(t *testing.T) {
 		{
 			name: "success register new user",
 			want: want{
-				statusCode: http.StatusOK,
-				resp:       "",
+				statusCode: http.StatusCreated,
+				resp:       "{\"id\":1,\"login\":\"a\"}",
 			},
 			request: handlers.AuthSignUpURI,
 			signUpRequest: &handlers.SignUpRequest{
@@ -55,8 +55,8 @@ func TestUserHandler(t *testing.T) {
 		{
 			name: "success register new user (50 char password and login)",
 			want: want{
-				statusCode: http.StatusOK,
-				resp:       "",
+				statusCode: http.StatusCreated,
+				resp:       "{\"id\":2,\"login\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"}",
 			},
 			request: handlers.AuthSignUpURI,
 			signUpRequest: &handlers.SignUpRequest{
