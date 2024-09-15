@@ -7,13 +7,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/andreevym/gophkeeper/internal/handlers"
 	"io"
 	"mime/multipart"
 	"net/http"
 	"net/url"
 	"os"
 	"strings"
+
+	"github.com/andreevym/gophkeeper/internal/handlers"
 )
 
 // Client represents a client that communicates with the GophKeeper service.

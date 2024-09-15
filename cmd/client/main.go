@@ -3,11 +3,11 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/andreevym/gophkeeper/internal/handlers"
 	"os"
 	"strings"
 
 	"github.com/andreevym/gophkeeper/internal/client"
+	"github.com/andreevym/gophkeeper/internal/handlers"
 )
 
 const (

@@ -3,13 +3,14 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
+	"strconv"
+
 	"github.com/andreevym/gophkeeper/internal/storage"
 	"github.com/andreevym/gophkeeper/pkg/logger"
 	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
-	"io"
-	"net/http"
-	"strconv"
 )
 
 // FileUploadHandler handles the uploading of binary files and manages vault entries.
