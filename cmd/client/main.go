@@ -13,26 +13,29 @@ import (
 
 	"github.com/andreevym/gophkeeper/internal/handlers"
 	"github.com/andreevym/gophkeeper/internal/storage"
-	"github.com/andreevym/gophkeeper/pkg/logger"
-	"go.uber.org/zap"
+)
+
+const (
+	successColor = "\033[32m" // Green
+	errorColor   = "\033[31m" // Red
+	resetColor   = "\033[0m"  // Reset
 )
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Printf("received worn count of arguments: %d, byt expected more than one\n", len(os.Args)-1)
 		printHelp()
 		os.Exit(1)
 	}
 
 	cmd := os.Args[1]
+	cmd = strings.ToLower(cmd)
 	if cmd == "help" {
 		printHelp()
 		os.Exit(0)
 	}
 
 	if len(os.Args) < 3 {
-		fmt.Printf("received worn count of arguments: %d, byt expected more than one\n", len(os.Args)-1)
-		printHelp()
+		fmt.Printf("%sReceived wrong count of arguments: %d, but expected more than one (for help use 'help' command)%s\n", errorColor, len(os.Args)-1, resetColor)
 		os.Exit(1)
 	}
 
@@ -42,37 +45,37 @@ func main() {
 	args := os.Args[2:]
 
 	switch cmd {
-	case "signUp":
-		if len(args) < 2 {
-			logger.Logger().Error("user command requires at least two arguments")
+	case "signup":
+		if len(args) < 3 {
+			fmt.Printf("%sUser command requires at least three arguments (for help use 'help' command)%s\n", errorColor, resetColor)
 			os.Exit(1)
 		}
 		login := args[1]
 		password := args[2]
 		err := client.CreateUser(login, password)
 		if err != nil {
-			logger.Logger().Error("failed to create user", zap.String("login", login), zap.Error(err))
+			fmt.Printf("%sFailed to create user (for help use 'help' command): %s%s\n", errorColor, err, resetColor)
 			os.Exit(1)
 		}
-		logger.Logger().Info("user command executed successfully")
+		fmt.Printf("%sUser created successfully%s\n", successColor, resetColor)
 		os.Exit(0)
-	case "signIn":
-		if len(args) < 2 {
-			logger.Logger().Error("user command requires at least two arguments")
+	case "signin":
+		if len(args) < 3 {
+			fmt.Printf("%sSign-in command requires at least three arguments (for help use 'help' command)%s\n", errorColor, resetColor)
 			os.Exit(1)
 		}
 		login := args[1]
 		password := args[2]
 		token, err := client.SignIn(login, password)
 		if err != nil {
-			logger.Logger().Error("no command to execute", zap.Error(err))
+			fmt.Printf("%sSign-in failed: %s%s\n", errorColor, err, resetColor)
 			os.Exit(1)
 		}
 		fmt.Println(token)
 		os.Exit(0)
-	case "saveVault":
-		if len(args) < 2 {
-			logger.Logger().Error("vault command requires at least two arguments")
+	case "savevault":
+		if len(args) < 4 {
+			fmt.Printf("%sSave vault command requires at least four arguments (for help use 'help' command)%s\n", errorColor, resetColor)
 			os.Exit(1)
 		}
 		token := args[1]
@@ -84,35 +87,36 @@ func main() {
 		}
 		v, err := client.NewVault(token, key, value, vaultID)
 		if err != nil {
-			logger.Logger().Error("failed to create vault", zap.Error(err))
+			fmt.Printf("%sFailed to create vault: %s%s\n", errorColor, err, resetColor)
 			os.Exit(1)
 		}
 		b, err := json.Marshal(v)
 		if err != nil {
-			logger.Logger().Error("marshal vault command executed successfully", zap.Error(err))
+			fmt.Printf("%sFailed to marshal vault response: %s%s\n", errorColor, err, resetColor)
 			os.Exit(1)
 		}
-		logger.Logger().Info("vault command executed successfully", zap.String("resp", string(b)))
-	case "getVault":
-		if len(args) < 2 {
-			logger.Logger().Error("vault command requires at least two arguments")
+		fmt.Printf("%sVault created successfully: %s%s\n", successColor, string(b), resetColor)
+	case "getvault":
+		if len(args) < 3 {
+			fmt.Printf("%sGet vault command requires at least three arguments (for help use 'help' command)%s\n", errorColor, resetColor)
 			os.Exit(1)
 		}
 		token := args[1]
 		vaultID := args[2]
 		v, err := client.GetVault(token, vaultID)
 		if err != nil {
-			logger.Logger().Error("no vault command executed successfully", zap.Error(err))
+			fmt.Printf("%sFailed to get vault: %s%s\n", errorColor, err, resetColor)
 			os.Exit(1)
 		}
 		b, err := json.Marshal(v)
 		if err != nil {
-			logger.Logger().Error("marshal vault command executed successfully", zap.Error(err))
+			fmt.Printf("%sFailed to marshal vault response: %s%s\n", errorColor, err, resetColor)
 			os.Exit(1)
 		}
-		logger.Logger().Info("vault command executed successfully", zap.String("resp", string(b)))
+		fmt.Printf("%sVault retrieved successfully: %s%s\n", successColor, string(b), resetColor)
+	default:
+		fmt.Printf("%sReceived wrong command '%s' (for help use 'help' command)%s\n", errorColor, strings.ToLower(cmd), resetColor)
 	}
-
 }
 
 type Client struct {
