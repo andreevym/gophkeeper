@@ -20,6 +20,12 @@ jobs:
     - name: Build
       run: go build -v ./...
 
+  linter:
+    runs-on: ubuntu-latest
+    steps:
+      - name: GolangCI-Linter
+        uses: Mushus/golangci-linter@v1.1.2
+      
   test:
     runs-on: ubuntu-latest
     services:
