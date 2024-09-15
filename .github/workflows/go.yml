@@ -6,7 +6,9 @@ on:
   pull_request:
     branches: [ "main" ]
   release:
-    types: [created]
+    types:
+      - published
+      - edited
 
 permissions:
     contents: write
@@ -40,7 +42,8 @@ jobs:
             goos: windows
     steps:
     - uses: actions/checkout@v4
-    - uses: wangyoucao577/go-release-action@v1
+    - name: compile and release 
+      uses: wangyoucao577/go-release-action@v1
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         goos: ${{ matrix.goos }}
