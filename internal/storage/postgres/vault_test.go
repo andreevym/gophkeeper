@@ -12,14 +12,15 @@ import (
 )
 
 func TestVaultRepository(t *testing.T) {
+	t.Parallel()
 	db := postgres.NewDB()
 	defer db.TeardownDB()
-	err := db.SetupDB("../../migrations")
+	ctx := context.Background()
+	err := db.SetupDB(ctx, "../../../migrations")
 	if err != nil {
 		log.Fatalf("Could not setup postgres container: %v", err)
 	}
 
-	ctx := context.Background()
 	err = db.DB.PingContext(ctx)
 	require.NoError(t, err)
 

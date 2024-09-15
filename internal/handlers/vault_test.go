@@ -2,6 +2,7 @@ package handlers_test
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -20,9 +21,12 @@ import (
 )
 
 func TestVaultHandler(t *testing.T) {
+	t.Parallel()
 	db := postgres.NewDB()
 	defer db.TeardownDB()
-	err := db.SetupDB("../../migrations")
+
+	ctx := context.Background()
+	err := db.SetupDB(ctx, "../../migrations")
 	if err != nil {
 		log.Fatalf("Could not setup postgres container: %v", err)
 	}
