@@ -4,13 +4,17 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/andreevym/gophkeeper/internal/auth"
 	"github.com/andreevym/gophkeeper/internal/config"
 	"github.com/andreevym/gophkeeper/internal/handlers"
 	"github.com/andreevym/gophkeeper/internal/middleware"
 	"github.com/andreevym/gophkeeper/internal/pwd"
-	"github.com/andreevym/gophkeeper/internal/server"
 	"github.com/andreevym/gophkeeper/internal/storage/postgres"
 	"github.com/andreevym/gophkeeper/pkg/logger"
 	"github.com/jackc/pgx/v5"
@@ -101,10 +105,32 @@ func main() {
 	)
 	logger.Logger().Info("Server listening", zap.String("addr", cfg.Address))
 
-	s := server.NewServer(router)
-	if s == nil {
-		log.Fatalf("Server can't be nil: %v", err)
+	httpServer := &http.Server{Addr: cfg.Address, Handler: router}
+	go func() {
+		defer cancel()
+		logger.Logger().Info("listening http server", zap.String("address", cfg.Address))
+		if err := httpServer.ListenAndServe(); err != nil {
+			log.Fatalf("failed listen http server: %v", err)
+		}
+	}()
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt, syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
+	for {
+		select {
+		case <-quit:
+			logger.Logger().Info("shutting down server...")
+			ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+			defer cancel()
+
+			if err := httpServer.Shutdown(ctx); err != nil {
+				log.Fatalf("Server shutdown failed: %v", err)
+			}
+			logger.Logger().Info("server http stopped gracefully")
+			return
+		case <-ctx.Done():
+			logger.Logger().Info("shutting down server context done...")
+			return
+		}
 	}
-	defer s.Shutdown()
-	s.Run(cfg.Address)
 }
