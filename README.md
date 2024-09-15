@@ -1,4 +1,4 @@
-# GophKeeper - README
+# GophKeeper
 
 Welcome to the GophKeeper project, a secure client-server system that allows users to store and manage sensitive information like logins, passwords, binary data, and other private information. This project consists of two main components: the **Client** and the **Server**.
 
@@ -61,27 +61,43 @@ The following Mermaid diagram illustrates the high-level architecture of the Gop
 
 ```mermaid
 graph TD
-    Client(User) -->|1. Sign Up / Sign In| Server
-    Client -->|2. Create Vault / Get Vault| Server
-    Server -->|3. Store / Retrieve Data| Database
+    Client[Client] -->|<font color="#007bff"><b>1. Sign Up / Sign In</b></font>| Server
+    Client -->|<font color="#17a2b8"><b>2. Create Vault / Get Vault</b></font>| Server
+    Server -->|<font color="#28a745"><b>3. Store / Retrieve Data</b></font>| Database
 
     subgraph "Client"
-        C1[Sign Up]
-        C2[Sign In]
-        C3[Create Vault]
-        C4[Get Vault]
+        C1[<font color="#ffc107"><b>Sign Up</b></font>]
+        C2[<font color="#ffc107"><b>Sign In</b></font>]
+        C3[<font color="#ffc107"><b>Create Vault</b></font>]
+        C4[<font color="#ffc107"><b>Get Vault</b></font>]
     end
     
     subgraph "Server"
-        S1[Handle Authentication]
-        S2[Validate JWT Tokens]
-        S3[Process Vault Requests]
+        S1[<font color="#6610f2"><b>Handle Authentication</b></font>]
+        S2[<font color="#6610f2"><b>Validate JWT Tokens</b></font>]
+        S3[<font color="#6610f2"><b>Process Vault Requests</b></font>]
     end
     
     subgraph "Database"
-        D1[User Data]
-        D2[Vault Data]
+        D1[<font color="#fd7e14"><b>User Data</b></font>]
+        D2[<font color="#fd7e14"><b>Vault Data</b></font>]
     end
+    
+    style Client fill:#ffffff,stroke:#333,stroke-width:2px
+    style Server fill:#f8f9fa,stroke:#333,stroke-width:2px
+    style Database fill:#e9ecef,stroke:#333,stroke-width:2px
+    
+    style C1 fill:#ffffff,stroke:#007bff,stroke-width:2px
+    style C2 fill:#ffffff,stroke:#007bff,stroke-width:2px
+    style C3 fill:#ffffff,stroke:#007bff,stroke-width:2px
+    style C4 fill:#ffffff,stroke:#007bff,stroke-width:2px
+    
+    style S1 fill:#f8f9fa,stroke:#6610f2,stroke-width:2px
+    style S2 fill:#f8f9fa,stroke:#6610f2,stroke-width:2px
+    style S3 fill:#f8f9fa,stroke:#6610f2,stroke-width:2px
+    
+    style D1 fill:#e9ecef,stroke:#fd7e14,stroke-width:2px
+    style D2 fill:#e9ecef,stroke:#fd7e14,stroke-width:2px
     
     C1 --> S1
     C2 --> S1
