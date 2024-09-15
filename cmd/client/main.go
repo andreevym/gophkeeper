@@ -19,7 +19,8 @@ import (
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Println("Usage: client <command>")
+		fmt.Printf("received worn count of arguments: %d, byt expected more than one\n", len(os.Args)-1)
+		printHelp()
 		os.Exit(1)
 	}
 
@@ -30,7 +31,8 @@ func main() {
 	}
 
 	if len(os.Args) < 3 {
-		fmt.Println("Usage: client <command> <server>")
+		fmt.Printf("received worn count of arguments: %d, byt expected more than one\n", len(os.Args)-1)
+		printHelp()
 		os.Exit(1)
 	}
 
