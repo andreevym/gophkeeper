@@ -101,17 +101,17 @@ To upload a binary file to the server, use the `uploadFile` command. This comman
 - **To create a new file** (no ID required):
 
   ```bash
-  ./client uploadFile http://localhost:8080 "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySUQiOiIxIn0.sJqw6MbWNmlUo2UCdJZgKB1p3opMT8HODM-m3fNzvwujH3btNT-rxMCa4ZAxNquVf38NewnyLooGGcm2Fys0DQ" filename3 /home/yuryandreev/go/src/github.com/andreevym/gophkeeper/CLIENT.md
+  ./client uploadFile http://localhost:8080 "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySUQiOiIxIn0.sJqw6MbWNmlUo2UCdJZgKB1p3opMT8HODM-m3fNzvwujH3btNT-rxMCa4ZAxNquVf38NewnyLooGGcm2Fys0DQ" filename3 ./CLIENT.md
   ```
 
   In this example:
    - `filename3` is the name you want to assign to the uploaded file.
-   - `/home/yuryandreev/go/src/github.com/andreevym/gophkeeper/CLIENT.md` is the path to the file you want to upload.
+   - `./CLIENT.md` is the path to the file you want to upload.
 
 - **To update an existing file** (include the vault ID):
 
   ```bash
-  ./client uploadFile http://localhost:8080 "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySUQiOiIxIn0.xDRROxL2MRA57IOhSxc1s2S-Nfkf6njT390H7GElkhL-tzRWX7hTwcgfT33X0xlyV83llKw4Usd8UG_xolRyRg" filename4 /home/yuryandreev/go/src/github.com/andreevym/gophkeeper/CLIENT.md 8
+  ./client uploadFile http://localhost:8080 "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySUQiOiIxIn0.xDRROxL2MRA57IOhSxc1s2S-Nfkf6njT390H7GElkhL-tzRWX7hTwcgfT33X0xlyV83llKw4Usd8UG_xolRyRg" filename4 ./CLIENT.md 8
   ```
 
   In this example:
