@@ -57,7 +57,6 @@ func NewServiceHandlers(
 func NewRouter(s *ServiceHandlers, middlewares ...func(http.Handler) http.Handler) *chi.Mux {
 	r := chi.NewRouter()
 
-	// Attach other middlewares
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)

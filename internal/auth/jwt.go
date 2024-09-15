@@ -12,7 +12,6 @@ import (
 )
 
 func GenKey() (*ecdsa.PrivateKey, error) {
-	// Генерируем новый ECDSA ключ
 	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	if err != nil {
 		fmt.Println("Ошибка при генерации ключа:", err)
