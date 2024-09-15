@@ -3,12 +3,12 @@ package postgres
 import (
 	"context"
 	"fmt"
-	"github.com/andreevym/gophkeeper/pkg/logger"
 	"io/fs"
 	"os"
 	"path/filepath"
 	"time"
 
+	"github.com/andreevym/gophkeeper/pkg/logger"
 	"github.com/jmoiron/sqlx"
 	"go.uber.org/zap"
 )

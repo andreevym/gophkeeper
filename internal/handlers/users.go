@@ -4,14 +4,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"net/http"
 
 	"github.com/andreevym/gophkeeper/internal/storage"
 	storage2 "github.com/andreevym/gophkeeper/internal/storage/postgres"
 	"github.com/andreevym/gophkeeper/pkg/logger"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
-	"io"
-	"net/http"
 )
 
 type SignUpRequest struct {

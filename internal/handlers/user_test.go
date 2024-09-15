@@ -3,16 +3,16 @@ package handlers_test
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/andreevym/gophkeeper/internal/auth"
-	"github.com/andreevym/gophkeeper/internal/handlers"
-	"github.com/andreevym/gophkeeper/internal/middleware"
-	"github.com/andreevym/gophkeeper/internal/pwd"
-	"github.com/andreevym/gophkeeper/internal/storage/postgres"
 	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/andreevym/gophkeeper/internal/auth"
+	"github.com/andreevym/gophkeeper/internal/handlers"
+	"github.com/andreevym/gophkeeper/internal/middleware"
+	"github.com/andreevym/gophkeeper/internal/pwd"
+	"github.com/andreevym/gophkeeper/internal/storage/postgres"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

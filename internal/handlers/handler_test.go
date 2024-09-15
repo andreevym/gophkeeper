@@ -1,12 +1,13 @@
 package handlers_test
 
 import (
-	_ "github.com/lib/pq"
-	"github.com/stretchr/testify/require"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	_ "github.com/lib/pq"
+	"github.com/stretchr/testify/require"
 )
 
 func testRequest(t *testing.T, ts *httptest.Server, method, path string, reqBody io.Reader, header http.Header) (int, http.Header, string) {

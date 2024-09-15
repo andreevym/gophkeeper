@@ -5,15 +5,16 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/andreevym/gophkeeper/internal/handlers"
-	"github.com/andreevym/gophkeeper/internal/storage"
-	"github.com/andreevym/gophkeeper/pkg/logger"
-	"go.uber.org/zap"
 	"io"
 	"net/http"
 	"net/url"
 	"os"
 	"strings"
+
+	"github.com/andreevym/gophkeeper/internal/handlers"
+	"github.com/andreevym/gophkeeper/internal/storage"
+	"github.com/andreevym/gophkeeper/pkg/logger"
+	"go.uber.org/zap"
 )
 
 func main() {

@@ -7,6 +7,7 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"fmt"
+
 	"github.com/andreevym/gophkeeper/pkg/logger"
 	"go.uber.org/zap"
 )

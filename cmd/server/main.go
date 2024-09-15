@@ -3,13 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
-	"github.com/andreevym/gophkeeper/internal/pwd"
 	"log"
 
 	"github.com/andreevym/gophkeeper/internal/auth"
 	"github.com/andreevym/gophkeeper/internal/config"
 	"github.com/andreevym/gophkeeper/internal/handlers"
 	"github.com/andreevym/gophkeeper/internal/middleware"
+	"github.com/andreevym/gophkeeper/internal/pwd"
 	"github.com/andreevym/gophkeeper/internal/server"
 	"github.com/andreevym/gophkeeper/internal/storage/postgres"
 	"github.com/andreevym/gophkeeper/pkg/logger"

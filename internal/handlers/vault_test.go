@@ -4,17 +4,17 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
 	"github.com/andreevym/gophkeeper/internal/auth"
 	"github.com/andreevym/gophkeeper/internal/handlers"
 	"github.com/andreevym/gophkeeper/internal/middleware"
 	"github.com/andreevym/gophkeeper/internal/pwd"
 	"github.com/andreevym/gophkeeper/internal/storage"
 	"github.com/andreevym/gophkeeper/internal/storage/postgres"
-	"log"
-	"net/http"
-	"net/http/httptest"
-	"testing"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

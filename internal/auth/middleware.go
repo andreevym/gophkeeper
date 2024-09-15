@@ -2,9 +2,9 @@ package auth
 
 import (
 	"fmt"
-	"github.com/andreevym/gophkeeper/pkg/logger"
 	"net/http"
 
+	"github.com/andreevym/gophkeeper/pkg/logger"
 	"go.uber.org/zap"
 )
 

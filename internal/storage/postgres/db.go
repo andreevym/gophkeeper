@@ -3,12 +3,13 @@ package postgres
 import (
 	"context"
 	"fmt"
+	"log"
+	"time"
+
 	"github.com/jackc/pgx/v5"
 	"github.com/jmoiron/sqlx"
 	"github.com/ory/dockertest/v3"
 	"github.com/ory/dockertest/v3/docker"
-	"log"
-	"time"
 )
 
 type DB struct {

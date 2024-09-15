@@ -2,14 +2,13 @@ package postgres_test
 
 import (
 	"context"
-	"github.com/andreevym/gophkeeper/internal/storage"
-	"github.com/andreevym/gophkeeper/internal/storage/postgres"
 	"log"
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
+	"github.com/andreevym/gophkeeper/internal/storage"
+	"github.com/andreevym/gophkeeper/internal/storage/postgres"
 	_ "github.com/lib/pq"
+	"github.com/stretchr/testify/require"
 )
 
 func TestVaultRepository(t *testing.T) {
