@@ -25,7 +25,7 @@ jobs:
             goos: windows
     steps:
     - uses: actions/checkout@v4
-    - name: compile and release 
+    - name: compile and release client
       uses: wangyoucao577/go-release-action@v1
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -34,4 +34,14 @@ jobs:
         goversion: "https://go.dev/dl/go1.23.1.linux-amd64.tar.gz"
         project_path: "./cmd/client"
         binary_name: "client"
-        extra_files: README.md
+        extra_files: CLIENT.md
+    - name: compile and release server
+      uses: wangyoucao577/go-release-action@v1
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        goos: ${{ matrix.goos }}
+        goarch: ${{ matrix.goarch }}
+        goversion: "https://go.dev/dl/go1.23.1.linux-amd64.tar.gz"
+        project_path: "./cmd/server"
+        binary_name: "server"
+        extra_files: SERVER.md

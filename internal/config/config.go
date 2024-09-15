@@ -41,6 +41,13 @@ func (c *ServerConfig) Init() (*ServerConfig, error) {
 	flag.StringVar(&c.JWTSecretKey, "j", "", "auth secret key")
 	flag.Parse()
 
+	if config := os.Getenv("CONFIG"); config != "" {
+		err := c.GetConfigFromFile(config)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read config file '%s': %w", config, err)
+		}
+	}
+
 	if err := env.Parse(c); err != nil {
 		return nil, fmt.Errorf("failed to parse env: %w", err)
 	}
