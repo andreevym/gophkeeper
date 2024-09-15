@@ -34,7 +34,7 @@ type ServiceHandlers struct {
 	authProvider UserSessionExtractor
 	userStorage  storage.UserStorage
 	vaultStorage storage.VaultStorage
-	hasher       Hasher
+	hashService  Hasher
 }
 
 func NewServiceHandlers(
@@ -42,14 +42,14 @@ func NewServiceHandlers(
 	authProvider UserSessionExtractor,
 	vaultStorage storage.VaultStorage,
 	userStorage storage.UserStorage,
-	hasher Hasher,
+	hashService Hasher,
 ) *ServiceHandlers {
 	return &ServiceHandlers{
 		dbClient:     dbClient,
 		authProvider: authProvider,
 		vaultStorage: vaultStorage,
 		userStorage:  userStorage,
-		hasher:       hasher,
+		hashService:  hashService,
 	}
 }
 

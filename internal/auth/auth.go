@@ -33,7 +33,7 @@ const (
 	UserIDContextKey ContextKey = iota
 )
 
-func (p Provider) CreateSession(ctx context.Context, userID uint64) (context.Context, error) {
+func (p *Provider) CreateSession(ctx context.Context, userID uint64) (context.Context, error) {
 	_, err := p.userStorage.GetUser(ctx, userID)
 	if err != nil {
 		return ctx, fmt.Errorf("get user: %w", err)
@@ -43,7 +43,7 @@ func (p Provider) CreateSession(ctx context.Context, userID uint64) (context.Con
 	return ctxWithValue, nil
 }
 
-func (p Provider) GetUserFromSession(ctx context.Context) (storage.User, error) {
+func (p *Provider) GetUserFromSession(ctx context.Context) (storage.User, error) {
 	userID := ctx.Value(UserIDContextKey)
 	if userID == nil {
 		return storage.User{}, ErrAuthUnauthorized

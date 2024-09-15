@@ -148,7 +148,7 @@ func (h *ServiceHandlers) PostSignIn(writer http.ResponseWriter, request *http.R
 		return
 	}
 
-	if !h.hasher.Match(user.Password, signInRequest.Password) {
+	if !h.hashService.Match(user.Password, signInRequest.Password) {
 		msg := fmt.Sprintf("failed to match password %s", signInRequest.Login)
 		logger.Logger().Warn(msg, zap.String("login", signInRequest.Login))
 		writer.WriteHeader(http.StatusBadRequest)
