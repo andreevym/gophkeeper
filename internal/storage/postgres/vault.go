@@ -17,15 +17,23 @@ var (
 	ErrVaultNotFound = errors.New("vault not found")
 )
 
+// VaultStorage handles operations related to vault data in a PostgreSQL database.
 type VaultStorage struct {
 	db   *sqlx.DB
 	conn *pgx.Conn
 }
 
+// NewVaultStorage creates a new instance of VaultStorage.
+// It takes a *sqlx.DB and a *pgx.Conn instance which are used to interact with the database.
+// Returns a pointer to a VaultStorage instance.
 func NewVaultStorage(db *sqlx.DB, conn *pgx.Conn) *VaultStorage {
 	return &VaultStorage{db: db, conn: conn}
 }
 
+// GetVault retrieves a vault by its ID.
+// It takes a context.Context and a vault ID (uint64) as parameters.
+// Returns a storage.Vault object and an error if any.
+// If the vault is not found, it returns ErrVaultNotFound.
 func (s VaultStorage) GetVault(ctx context.Context, id uint64) (storage.Vault, error) {
 	tx, err := s.conn.Begin(ctx)
 	if err != nil {
@@ -59,6 +67,9 @@ func (s VaultStorage) GetVault(ctx context.Context, id uint64) (storage.Vault, e
 	return v, nil
 }
 
+// CreateVault inserts a new vault into the database.
+// It takes a context.Context and a storage.Vault object as parameters.
+// Returns the created storage.Vault object and an error if any.
 func (s VaultStorage) CreateVault(ctx context.Context, v storage.Vault) (storage.Vault, error) {
 	tx, err := s.conn.Begin(ctx)
 	if err != nil {
@@ -102,9 +113,12 @@ func (s VaultStorage) CreateVault(ctx context.Context, v storage.Vault) (storage
 		Key:    v.Key,
 		Value:  v.Value,
 		UserID: v.UserID,
-	}, err
+	}, nil
 }
 
+// UpdateVault updates an existing vault in the database.
+// It takes a context.Context and a storage.Vault object as parameters.
+// Returns an error if any.
 func (s VaultStorage) UpdateVault(ctx context.Context, v storage.Vault) error {
 	tx, err := s.conn.Begin(ctx)
 	if err != nil {
@@ -137,9 +151,16 @@ func (s VaultStorage) UpdateVault(ctx context.Context, v storage.Vault) error {
 	}
 
 	err = tx.Commit(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
 	return nil
 }
 
+// DeleteVault removes a vault from the database by its ID.
+// It takes a context.Context and a vault ID (uint64) as parameters.
+// Returns an error if any.
 func (s VaultStorage) DeleteVault(ctx context.Context, id uint64) error {
 	sql := `DELETE FROM vault WHERE id = $1`
 	_, err := s.db.ExecContext(ctx, sql, id)

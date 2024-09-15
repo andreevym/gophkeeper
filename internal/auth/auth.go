@@ -13,11 +13,21 @@ import (
 	"go.uber.org/zap"
 )
 
+// Provider is a structure that handles authentication and authorization.
+// It uses a storage system for user data and an ECDSA private key for JWT signing and verification.
 type Provider struct {
-	userStorage   storage.UserStorage
-	jwtPrivateKey *ecdsa.PrivateKey
+	userStorage   storage.UserStorage // Storage interface for user data operations
+	jwtPrivateKey *ecdsa.PrivateKey   // ECDSA private key for signing JWTs
 }
 
+// NewAuthProvider creates a new instance of Provider with the given user storage and JWT private key.
+//
+// Parameters:
+//   - userStorage (storage.UserStorage): The storage interface for user data.
+//   - jwtPrivateKey (*ecdsa.PrivateKey): The private key used for signing JWTs.
+//
+// Returns:
+//   - *Provider: A new Provider instance.
 func NewAuthProvider(userStorage storage.UserStorage, jwtPrivateKey *ecdsa.PrivateKey) *Provider {
 	return &Provider{
 		userStorage:   userStorage,
@@ -25,14 +35,26 @@ func NewAuthProvider(userStorage storage.UserStorage, jwtPrivateKey *ecdsa.Priva
 	}
 }
 
+// ContextKey is a custom type for context keys used in the authentication process.
 type ContextKey int
 
-var ErrAuthUnauthorized = errors.New("unauthorized")
-
 const (
+	// UserIDContextKey is the context key used to store and retrieve user IDs in the context.
 	UserIDContextKey ContextKey = iota
 )
 
+// ErrAuthUnauthorized is an error returned when a user is unauthorized.
+var ErrAuthUnauthorized = errors.New("unauthorized")
+
+// CreateSession creates a new session for the user with the specified userID and stores it in the context.
+//
+// Parameters:
+//   - ctx (context.Context): The context in which the session will be created.
+//   - userID (uint64): The ID of the user for whom the session is being created.
+//
+// Returns:
+//   - context.Context: The context with the user ID added.
+//   - error: An error if the user cannot be retrieved or if there is an issue creating the session.
 func (p *Provider) CreateSession(ctx context.Context, userID uint64) (context.Context, error) {
 	_, err := p.userStorage.GetUser(ctx, userID)
 	if err != nil {
@@ -43,6 +65,14 @@ func (p *Provider) CreateSession(ctx context.Context, userID uint64) (context.Co
 	return ctxWithValue, nil
 }
 
+// GetUserFromSession retrieves the user associated with the session from the context.
+//
+// Parameters:
+//   - ctx (context.Context): The context containing the session information.
+//
+// Returns:
+//   - storage.User: The user associated with the session.
+//   - error: An error if the user cannot be retrieved or if there is an issue accessing the session.
 func (p *Provider) GetUserFromSession(ctx context.Context) (storage.User, error) {
 	userID := ctx.Value(UserIDContextKey)
 	if userID == nil {
@@ -56,6 +86,14 @@ func (p *Provider) GetUserFromSession(ctx context.Context) (storage.User, error)
 	return user, nil
 }
 
+// ValidateToken validates a JWT token and extracts the user ID from it.
+//
+// Parameters:
+//   - tokenString (string): The JWT token to be validated.
+//
+// Returns:
+//   - uint64: The user ID extracted from the token, or 0 if the token is invalid.
+//   - error: An error if the token is invalid or if there is an issue parsing the token.
 func (p *Provider) ValidateToken(tokenString string) (uint64, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		return &p.jwtPrivateKey.PublicKey, nil
@@ -84,6 +122,14 @@ func (p *Provider) ValidateToken(tokenString string) (uint64, error) {
 	return userID, nil
 }
 
+// GenerateToken generates a JWT token for a given user ID.
+//
+// Parameters:
+//   - userID (uint64): The ID of the user for whom the token is being generated.
+//
+// Returns:
+//   - string: The generated JWT token.
+//   - error: An error if token generation fails.
 func (p *Provider) GenerateToken(userID uint64) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodES256, &jwt.MapClaims{
 		"userID": strconv.FormatUint(userID, 10),

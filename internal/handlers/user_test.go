@@ -69,7 +69,7 @@ func TestUserHandler(t *testing.T) {
 			name: "success register new user (empty password and login)",
 			want: want{
 				statusCode: http.StatusBadRequest,
-				resp:       "login is empty or too long more than 50 characters but actual len is 0",
+				resp:       "login is empty or too long more than 50 characters but actual len is 0\n",
 			},
 			request: handlers.AuthSignUpURI,
 			signUpRequest: &handlers.SignUpRequest{
@@ -82,7 +82,7 @@ func TestUserHandler(t *testing.T) {
 			name: "success register new user (more 50 char password and login)",
 			want: want{
 				statusCode: http.StatusBadRequest,
-				resp:       "login is empty or too long more than 50 characters but actual len is 51",
+				resp:       "login is empty or too long more than 50 characters but actual len is 51\n",
 			},
 			request: handlers.AuthSignUpURI,
 			signUpRequest: &handlers.SignUpRequest{

@@ -82,7 +82,7 @@ func TestVaultHandler(t *testing.T) {
 	reqBody, err = json.Marshal(vaultRequest)
 	require.NoError(t, err)
 	statusCode, _, got = testRequest(t, ts, http.MethodPost, handlers.VaultURI, bytes.NewBuffer(reqBody), header)
-	require.Equal(t, http.StatusOK, statusCode, "failed to make vault request", string(reqBody), got)
+	require.Equal(t, http.StatusCreated, statusCode, "failed to make vault request", string(reqBody), got)
 	assert.Contains(t, got, fmt.Sprintf("{\"id\":1,\"key\":\"key\",\"value\":\"val\",\"user_id\":"))
 
 	vaultResponse := storage.Vault{}

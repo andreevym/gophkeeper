@@ -8,18 +8,27 @@ import (
 	"go.uber.org/zap"
 )
 
-// Middleware is a middleware for authentication using JWT tokens.
+// Middleware provides HTTP middleware for authentication using JWT tokens.
 type Middleware struct {
-	authProvider         *Provider
-	jwtSecretKey         string
-	allowUnauthorizedURI map[string]struct{}
+	authProvider         *Provider           // Provider for authentication and JWT handling
+	jwtSecretKey         string              // JWT secret key used for token validation
+	allowUnauthorizedURI map[string]struct{} // URIs that can be accessed without authentication
 }
 
+// JwtService defines an interface for JWT token validation.
 type JwtService interface {
 	ValidateToken(tokenString string, jwtSecretKey string) (uint64, error)
 }
 
-// NewAuthMiddleware creates a new instance of Middleware with the given AuthService.
+// NewAuthMiddleware creates a new instance of Middleware with the given AuthProvider and JWT secret key.
+//
+// Parameters:
+//   - authProvider (*Provider): The provider used for authentication and JWT handling.
+//   - jwtSecretKey (string): The JWT secret key used for validating tokens.
+//   - allowUnauthorizedURI (...string): List of URIs that can be accessed without authentication.
+//
+// Returns:
+//   - *Middleware: A new instance of Middleware configured with the provided parameters.
 func NewAuthMiddleware(
 	authProvider *Provider,
 	jwtSecretKey string,
@@ -37,9 +46,17 @@ func NewAuthMiddleware(
 	}
 }
 
-// WithAuthentication implements the http.HandlerFunc interface for the Middleware.
+// WithAuthentication returns an HTTP handler that performs authentication based on JWT tokens.
+// Requests to URIs in `allowUnauthorizedURI` are allowed without authentication.
+//
+// Parameters:
+//   - next (http.Handler): The next handler to call if authentication is successful.
+//
+// Returns:
+//   - http.Handler: An HTTP handler with authentication middleware applied.
 func (m *Middleware) WithAuthentication(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Check if the request URI is allowed without authentication
 		if _, ok := m.allowUnauthorizedURI[r.RequestURI]; ok {
 			next.ServeHTTP(w, r)
 			return
@@ -52,6 +69,7 @@ func (m *Middleware) WithAuthentication(next http.Handler) http.Handler {
 			return
 		}
 
+		// Remove "Bearer " prefix to get the token string
 		tokenString := authHeader[len("Bearer "):]
 
 		// Validate the token and extract user ID
@@ -70,6 +88,7 @@ func (m *Middleware) WithAuthentication(next http.Handler) http.Handler {
 			return
 		}
 
+		// Pass the context with the user ID to the next handler
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

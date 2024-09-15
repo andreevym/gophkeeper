@@ -2,14 +2,18 @@ package logger
 
 import (
 	"fmt"
+	"sync"
 
 	"go.uber.org/zap"
 )
 
-var log *zap.Logger
+var (
+	log             *zap.Logger
+	once            sync.Once
+	defaultLogLevel = "DEBUG"
+)
 
-const defaultLogLevel = "DEBUG"
-
+// NewLogger creates a new zap.Logger based on the provided log level.
 func NewLogger(level string) (*zap.Logger, error) {
 	atomicLevel, err := zap.ParseAtomicLevel(level)
 	if err != nil {
@@ -22,20 +26,25 @@ func NewLogger(level string) (*zap.Logger, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to build logger: %w", err)
 	}
-	log = zl
-	return log, nil
+	return zl, nil
 }
 
+// Logger returns the global zap.Logger instance. It initializes the logger if not already set.
 func Logger() *zap.Logger {
-	if log != nil {
-		return log
-	}
-
-	log, _ = NewLogger(defaultLogLevel)
-	log.Debug("debug log checked")
-	log.Info("info log checked")
-	log.Warn("warn log checked")
-	log.Error("error log checked")
-
+	once.Do(func() {
+		var err error
+		log, err = NewLogger(defaultLogLevel)
+		if err != nil {
+			// Fallback to a no-op logger or handle the error appropriately
+			fmt.Printf("Error initializing logger: %v\n", err)
+			log = zap.NewNop()
+		} else {
+			// Test logging to ensure logger is working correctly
+			log.Debug("debug log checked")
+			log.Info("info log checked")
+			log.Warn("warn log checked")
+			log.Error("error log checked")
+		}
+	})
 	return log
 }

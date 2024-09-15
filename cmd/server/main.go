@@ -48,19 +48,17 @@ func main() {
 
 	cfg, err := config.NewServerConfig().Init()
 	if err != nil {
-		log.Fatal("init server config", err)
+		log.Fatalf("Error initializing server config: %v", err)
 	}
 
-	if _, err := logger.NewLogger(cfg.LogLevel); err != nil {
-		log.Fatal("logger can't be initialized:", cfg.LogLevel, err)
+	_, err = logger.NewLogger(cfg.LogLevel)
+	if err != nil {
+		log.Fatalf("Error initializing logger with level %s: %v", cfg.LogLevel, err)
 	}
-
-	_, cancel := context.WithCancel(context.Background())
-	defer cancel()
 
 	db, err := sqlx.Connect("postgres", cfg.DatabaseURI)
 	if err != nil {
-		log.Fatalf("Failed to connect to database, database uri %s : %v", cfg.DatabaseURI, err)
+		logger.Logger().Fatal("Failed to connect to database", zap.String("databaseURI", cfg.DatabaseURI), zap.Error(err))
 	}
 	defer db.Close()
 
@@ -68,13 +66,13 @@ func main() {
 
 	conn, err := pgx.Connect(ctx, cfg.DatabaseURI)
 	if err != nil {
-		log.Fatalf("Failed to connect to database, database uri %s : %v", cfg.DatabaseURI, err)
+		logger.Logger().Fatal("Failed to connect to database", zap.String("databaseURI", cfg.DatabaseURI), zap.Error(err))
 	}
 	defer conn.Close(ctx)
 
 	err = postgres.Migration(ctx, "migrations", db)
 	if err != nil {
-		log.Fatalf("Failed to migrate database, database uri %s : %v", cfg.DatabaseURI, err)
+		logger.Logger().Fatal("Failed to migrate database", zap.String("databaseURI", cfg.DatabaseURI), zap.Error(err))
 	}
 
 	vaultStorage := postgres.NewVaultStorage(db, conn)
@@ -83,17 +81,16 @@ func main() {
 	if cfg.JWTSecretKey == "" {
 		_, cfg.JWTSecretKey, err = auth.MakeJwtSecretKey()
 		if err != nil {
-			log.Fatalf("Failed to generate JWT secret key: %v", err)
+			logger.Logger().Fatal("Failed to generate JWT secret key", zap.Error(err))
 		}
 	}
 
 	jwtPrivateKey, err := auth.ReadJwtSecretKey(cfg.JWTSecretKey)
 	if err != nil {
-		log.Fatalf("failed to read jwt secret key: %v", err)
+		logger.Logger().Fatal("Failed to read JWT secret key", zap.Error(err))
 	}
 
 	authProvider := auth.NewAuthProvider(userStorage, jwtPrivateKey)
-
 	authMiddleware := auth.NewAuthMiddleware(authProvider, cfg.JWTSecretKey, handlers.AuthSignInURI, handlers.AuthSignUpURI)
 	hashService := pwd.NewHashService()
 	serviceHandlers := handlers.NewServiceHandlers(db, authProvider, vaultStorage, userStorage, hashService)
@@ -103,14 +100,15 @@ func main() {
 		authMiddleware.WithAuthentication,
 		middleware.WithRequestLoggerMiddleware,
 	)
+
 	logger.Logger().Info("Server listening", zap.String("addr", cfg.Address))
 
 	httpServer := &http.Server{Addr: cfg.Address, Handler: router}
 	go func() {
-		defer cancel()
-		logger.Logger().Info("listening http server", zap.String("address", cfg.Address))
-		if err := httpServer.ListenAndServe(); err != nil {
-			log.Fatalf("failed listen http server: %v", err)
+		defer logger.Logger().Info("HTTP server stopped gracefully")
+		logger.Logger().Info("Listening HTTP server", zap.String("address", cfg.Address))
+		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			logger.Logger().Fatal("HTTP server listen failed", zap.Error(err))
 		}
 	}()
 
@@ -119,17 +117,16 @@ func main() {
 	for {
 		select {
 		case <-quit:
-			logger.Logger().Info("shutting down server...")
+			logger.Logger().Info("Shutting down server...")
 			ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 			defer cancel()
 
 			if err := httpServer.Shutdown(ctx); err != nil {
-				log.Fatalf("Server shutdown failed: %v", err)
+				logger.Logger().Fatal("Server shutdown failed", zap.Error(err))
 			}
-			logger.Logger().Info("server http stopped gracefully")
 			return
 		case <-ctx.Done():
-			logger.Logger().Info("shutting down server context done...")
+			logger.Logger().Info("Server context done")
 			return
 		}
 	}

@@ -1,17 +1,12 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"io"
-	"net/http"
-	"net/url"
 	"os"
 	"strings"
 
-	"github.com/andreevym/gophkeeper/internal/handlers"
+	"github.com/andreevym/gophkeeper/internal/client"
 	"github.com/andreevym/gophkeeper/internal/storage"
 )
 
@@ -21,244 +16,116 @@ const (
 	resetColor   = "\033[0m"  // Reset
 )
 
+// Invoker defines the methods that our Client should implement.
+type Invoker interface {
+	CreateUser(login, password string) error
+	SignIn(login, password string) (string, error)
+	GetVault(token, vaultID string) (storage.Vault, error)
+	NewVault(token, key, value, vaultID string) (storage.Vault, error)
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		printHelp()
 		os.Exit(1)
 	}
 
-	cmd := os.Args[1]
-	cmd = strings.ToLower(cmd)
+	cmd := strings.ToLower(os.Args[1])
 	if cmd == "help" {
 		printHelp()
 		os.Exit(0)
 	}
 
 	if len(os.Args) < 3 {
-		fmt.Printf("%sReceived wrong count of arguments: %d, but expected more than one (for help use 'help' command)%s\n", errorColor, len(os.Args)-1, resetColor)
+		fmt.Printf("%sError: Not enough arguments. Use 'help' command for usage.%s\n", errorColor, resetColor)
 		os.Exit(1)
 	}
 
 	serverAddress := os.Args[2]
-	client := NewClient(serverAddress)
+	c := client.NewClient(serverAddress)
 
 	args := os.Args[2:]
 
 	switch cmd {
 	case "signup":
-		if len(args) < 3 {
-			fmt.Printf("%sUser command requires at least three arguments (for help use 'help' command)%s\n", errorColor, resetColor)
-			os.Exit(1)
-		}
-		login := args[1]
-		password := args[2]
-		err := client.CreateUser(login, password)
-		if err != nil {
-			fmt.Printf("%sFailed to create user (for help use 'help' command): %s%s\n", errorColor, err, resetColor)
-			os.Exit(1)
-		}
-		fmt.Printf("%sUser created successfully%s\n", successColor, resetColor)
-		os.Exit(0)
+		handleSignUp(c, args)
 	case "signin":
-		if len(args) < 3 {
-			fmt.Printf("%sSign-in command requires at least three arguments (for help use 'help' command)%s\n", errorColor, resetColor)
-			os.Exit(1)
-		}
-		login := args[1]
-		password := args[2]
-		token, err := client.SignIn(login, password)
-		if err != nil {
-			fmt.Printf("%sSign-in failed: %s%s\n", errorColor, err, resetColor)
-			os.Exit(1)
-		}
-		fmt.Println(token)
-		os.Exit(0)
+		handleSignIn(c, args)
 	case "savevault":
-		if len(args) < 4 {
-			fmt.Printf("%sSave vault command requires at least four arguments (for help use 'help' command)%s\n", errorColor, resetColor)
-			os.Exit(1)
-		}
-		token := args[1]
-		key := args[2]
-		value := args[3]
-		vaultID := ""
-		if len(args) == 5 {
-			vaultID = args[4]
-		}
-		v, err := client.NewVault(token, key, value, vaultID)
-		if err != nil {
-			fmt.Printf("%sFailed to create vault: %s%s\n", errorColor, err, resetColor)
-			os.Exit(1)
-		}
-		b, err := json.Marshal(v)
-		if err != nil {
-			fmt.Printf("%sFailed to marshal vault response: %s%s\n", errorColor, err, resetColor)
-			os.Exit(1)
-		}
-		fmt.Printf("%sVault created successfully: %s%s\n", successColor, string(b), resetColor)
+		handleSaveVault(c, args)
 	case "getvault":
-		if len(args) < 3 {
-			fmt.Printf("%sGet vault command requires at least three arguments (for help use 'help' command)%s\n", errorColor, resetColor)
-			os.Exit(1)
-		}
-		token := args[1]
-		vaultID := args[2]
-		v, err := client.GetVault(token, vaultID)
-		if err != nil {
-			fmt.Printf("%sFailed to get vault: %s%s\n", errorColor, err, resetColor)
-			os.Exit(1)
-		}
-		b, err := json.Marshal(v)
-		if err != nil {
-			fmt.Printf("%sFailed to marshal vault response: %s%s\n", errorColor, err, resetColor)
-			os.Exit(1)
-		}
-		fmt.Printf("%sVault retrieved successfully: %s%s\n", successColor, string(b), resetColor)
+		handleGetVault(c, args)
 	default:
-		fmt.Printf("%sReceived wrong command '%s' (for help use 'help' command)%s\n", errorColor, strings.ToLower(cmd), resetColor)
+		fmt.Printf("%sError: Unknown command '%s'. Use 'help' command for usage.%s\n", errorColor, cmd, resetColor)
 	}
 }
 
-type Client struct {
-	serverAddress string
+func handleSignUp(invoker Invoker, args []string) {
+	if len(args) < 3 {
+		fmt.Printf("%sError: Sign-up command requires username and password.%s\n", errorColor, resetColor)
+		os.Exit(1)
+	}
+	login, password := args[1], args[2]
+	if err := invoker.CreateUser(login, password); err != nil {
+		fmt.Printf("%sError: Failed to create user: %s%s\n", errorColor, err, resetColor)
+		os.Exit(1)
+	}
+	fmt.Printf("%sUser created successfully%s\n", successColor, resetColor)
 }
 
-func NewClient(serverAddress string) *Client {
-	return &Client{serverAddress: serverAddress}
+func handleSignIn(invoker Invoker, args []string) {
+	if len(args) < 3 {
+		fmt.Printf("%sError: Sign-in command requires username and password.%s\n", errorColor, resetColor)
+		os.Exit(1)
+	}
+	login, password := args[1], args[2]
+	token, err := invoker.SignIn(login, password)
+	if err != nil {
+		fmt.Printf("%sError: Sign-in failed: %s%s\n", errorColor, err, resetColor)
+		os.Exit(1)
+	}
+	fmt.Println(token)
 }
 
-func (c Client) CreateUser(login string, password string) error {
-	b, err := json.Marshal(handlers.SignUpRequest{Login: login, Password: password})
+func handleSaveVault(invoker Invoker, args []string) {
+	if len(args) < 4 {
+		fmt.Printf("%sError: Save vault command requires token, key, and value.%s\n", errorColor, resetColor)
+		os.Exit(1)
+	}
+	token, key, value := args[1], args[2], args[3]
+	vaultID := ""
+	if len(args) == 5 {
+		vaultID = args[4]
+	}
+	vault, err := invoker.NewVault(token, key, value, vaultID)
 	if err != nil {
-		return fmt.Errorf("failed marshal: %w", err)
+		fmt.Printf("%sError: Failed to create vault: %s%s\n", errorColor, err, resetColor)
+		os.Exit(1)
 	}
-	resp, err := http.Post(c.serverAddress+handlers.AuthSignUpURI, "application/json", bytes.NewBuffer(b))
-	if err != nil {
-		return fmt.Errorf("failed post: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		readAll, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return fmt.Errorf("failed read response: %w", err)
-		}
-		return fmt.Errorf("failed post: %s, body: %s", resp.Status, string(readAll))
-	}
-	return nil
+	printVault(vault)
 }
 
-func (c Client) SignIn(login string, password string) (string, error) {
-	b, err := json.Marshal(handlers.SignInRequest{Login: login, Password: password})
+func handleGetVault(invoker Invoker, args []string) {
+	if len(args) < 3 {
+		fmt.Printf("%sError: Get vault command requires token and vault ID.%s\n", errorColor, resetColor)
+		os.Exit(1)
+	}
+	token, vaultID := args[1], args[2]
+	vault, err := invoker.GetVault(token, vaultID)
 	if err != nil {
-		return "", fmt.Errorf("failed marshal: %w", err)
+		fmt.Printf("%sError: Failed to get vault: %s%s\n", errorColor, err, resetColor)
+		os.Exit(1)
 	}
-	resp, err := http.Post(c.serverAddress+handlers.AuthSignInURI, "application/json", bytes.NewBuffer(b))
-	if err != nil {
-		return "", fmt.Errorf("failed post: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		readAll, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return "", fmt.Errorf("failed read response: %w", err)
-		}
-		return "", fmt.Errorf("failed post: %s, body %s", resp.Status, string(readAll))
-	}
-
-	token := resp.Header.Get("Authorization")
-	token = strings.Replace(token, "Bearer ", "", 1)
-	return token, nil
+	printVault(vault)
 }
 
-func (c Client) GetVault(token string, vaultID string) (storage.Vault, error) {
-	if vaultID == "" {
-		return storage.Vault{}, errors.New("vaultID is empty")
-	}
-	u, err := url.Parse(c.serverAddress + handlers.VaultURI + "/" + vaultID)
+func printVault(v storage.Vault) {
+	b, err := json.Marshal(v)
 	if err != nil {
-		return storage.Vault{}, fmt.Errorf("failed parse url: %w", err)
+		fmt.Printf("%sError: Failed to marshal vault response: %s%s\n", errorColor, err, resetColor)
+		os.Exit(1)
 	}
-	request := &http.Request{
-		Method: http.MethodGet,
-		URL:    u,
-		Header: http.Header{
-			"Authorization": []string{fmt.Sprintf("Bearer %s", token)},
-		},
-	}
-	httpClient := &http.Client{}
-	resp, err := httpClient.Do(request)
-	if err != nil {
-		return storage.Vault{}, fmt.Errorf("failed post: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		readAll, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return storage.Vault{}, fmt.Errorf("failed read response: %w", err)
-		}
-		return storage.Vault{}, fmt.Errorf("failed post: %s, body %s", resp.Status, string(readAll))
-	}
-
-	b, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return storage.Vault{}, fmt.Errorf("failed read all: %w", err)
-	}
-
-	vaultResponse := storage.Vault{}
-	err = json.Unmarshal(b, &vaultResponse)
-	if err != nil {
-		return storage.Vault{}, fmt.Errorf("failed unmarshal: %w", err)
-	}
-	return vaultResponse, nil
-}
-
-func (c Client) NewVault(token string, key string, value string, vaultID string) (storage.Vault, error) {
-	vaultRequest := handlers.VaultRequest{
-		Key:   key,
-		Value: value,
-	}
-	if vaultID != "" {
-		vaultRequest.ID = vaultID
-	}
-	b, err := json.Marshal(vaultRequest)
-	if err != nil {
-		return storage.Vault{}, fmt.Errorf("failed marshal: %w", err)
-	}
-	httpClient := &http.Client{}
-	request, err := http.NewRequest(http.MethodPost, c.serverAddress+handlers.VaultURI, bytes.NewBuffer(b))
-	if err != nil {
-		return storage.Vault{}, fmt.Errorf("failed post: %w", err)
-	}
-	request.Header.Set("Content-Type", "application/json")
-	request.Header.Set("Authorization", "Bearer "+token)
-	resp, err := httpClient.Do(request)
-	if err != nil {
-		return storage.Vault{}, fmt.Errorf("failed post: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		readAll, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return storage.Vault{}, fmt.Errorf("failed read response: %w", err)
-		}
-		return storage.Vault{}, fmt.Errorf("failed post: %s, body %s", resp.Status, string(readAll))
-	}
-
-	b, err = io.ReadAll(resp.Body)
-	if err != nil {
-		return storage.Vault{}, fmt.Errorf("failed read all: %w", err)
-	}
-
-	vaultResponse := storage.Vault{}
-	err = json.Unmarshal(b, &vaultResponse)
-	if err != nil {
-		return storage.Vault{}, fmt.Errorf("failed unmarshal: %w", err)
-	}
-	return vaultResponse, nil
+	fmt.Printf("%sVault operation successful: %s%s\n", successColor, string(b), resetColor)
 }
 
 func printHelp() {
