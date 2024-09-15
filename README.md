@@ -12,7 +12,7 @@ register new user with name 'testName' and password 'testPassword'
 ./client signUp http://localhost:8080 testName testPassword
 ```
 
-4. Sign In for receiving token
+2. Sign In for receiving token
 
 login user by user name 'testName' and password 'testPassword' for receiving auth token
 
