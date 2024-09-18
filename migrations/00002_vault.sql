@@ -1,12 +1,3 @@
-CREATE SEQUENCE IF NOT EXISTS users_id_seq;
-CREATE TABLE IF NOT EXISTS users
-(
-    id       BIGINT PRIMARY KEY DEFAULT nextval('users_id_seq'),
-    login    VARCHAR(200),
-    password VARCHAR(200)
-);
-
-
 CREATE SEQUENCE IF NOT EXISTS vault_id_seq;
 CREATE TABLE IF NOT EXISTS vault
 (
