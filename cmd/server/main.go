@@ -23,24 +23,24 @@ import (
 	"go.uber.org/zap"
 )
 
-var buildVersion string
-var buildDate string
-var buildCommit string
+var gitRef string
+var buildTime string
+var gitCommit string
 
 func printVersion() {
-	if buildVersion == "" {
-		buildVersion = "N/A"
+	if gitRef == "" {
+		gitRef = "N/A"
 	}
-	if buildDate == "" {
-		buildDate = "N/A"
+	if buildTime == "" {
+		buildTime = "N/A"
 	}
-	if buildCommit == "" {
-		buildCommit = "N/A"
+	if gitCommit == "" {
+		gitCommit = "N/A"
 	}
 
-	fmt.Printf("Build version: %s\n", buildVersion)
-	fmt.Printf("Build date: %s\n", buildDate)
-	fmt.Printf("Build commit: %s\n", buildCommit)
+	fmt.Printf("Build version: %s\n", gitRef)
+	fmt.Printf("Build date: %s\n", buildTime)
+	fmt.Printf("Build commit: %s\n", gitCommit)
 }
 
 func main() {

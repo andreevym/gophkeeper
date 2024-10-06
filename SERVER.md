@@ -68,7 +68,7 @@ To run the application, you can configure the server using one of the following 
 To build the application, run the following command:
 
 ```bash
-go build -o client
+go build -o server cmd/server/main.go
 ```
 
 ### Running the Application

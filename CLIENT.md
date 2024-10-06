@@ -1,130 +1,223 @@
-Here's the updated documentation to reflect the changes for the `uploadFile` command, which now supports both updating an existing file by specifying a vault ID or creating a new file if no ID is provided.
-
 # GophKeeper Client
 
-GophKeeper Client is the client-side application of the GophKeeper system, which allows users to securely store and manage their vaults containing logins, passwords, binary data, and other private information.
+GophKeeper Client is a command-line tool for interacting with the GophKeeper service, which allows users to securely store various types of sensitive information, such as login credentials, binary files, and text notes.
 
-This document provides instructions for building and using the GophKeeper Client to interact with the server.
-
----
+This document describes how to build and use the GophKeeper Client to manage your vaults.
 
 ## Table of Contents
 
 1. [Build the Client Application](#build-the-client-application)
 2. [Usage of Client Application](#usage-of-client-application)
-   - [1. Sign Up](#1-sign-up)
-   - [2. Sign In to Receive Token](#2-sign-in-to-receive-token)
-   - [3. Create a New Vault with Token](#3-create-a-new-vault-with-token)
-   - [4. Get Vault with Token](#4-get-vault-with-token)
-   - [5. Upload a File](#5-upload-a-file)
-3. [Summary of Commands](#summary-of-commands)
-
+    - [Commands Overview](#commands-overview)
+    - [Command Details](#command-details)
 ---
 
 ## Build the Client Application
 
-To build the GophKeeper Client application, run the following command:
+To build the GophKeeper Client application, run:
 
 ```bash
-go build -o client
+go build -o client cmd/client/main.go
 ```
 
-This will create a binary named `client` that you can use to perform operations such as signing up, signing in, creating vaults, retrieving vault information, and uploading files.
+This creates a binary named `client` that can be used for user registration, sign-in, vault management, and file uploads.
 
 ## Usage of Client Application
 
-The client application allows you to create and manage secure vaults. Below are the instructions for various client operations.
+The GophKeeper Client provides a variety of commands for different tasks. Below is an overview of the available commands, followed by detailed usage information.
 
-### 1. Sign Up
+### Commands Overview
 
-To register a new user, use the `signUp` command along with the server URL, username, and password.
+| Command                  | Description                                               |
+|--------------------------|-----------------------------------------------------------|
+| `signup`                 | Register a new user                                       |
+| `signin`                 | Authenticate and retrieve an access token                 |
+| `savevault`              | Create a new vault entry with a key-value pair            |
+| `getvault`               | Retrieve a vault entry by its ID                          |
+| `uploadfile`             | Upload a binary file to the vault                         |
+| `store-login-password`   | Store a login and password pair in the vault              |
+| `get-login-password`     | Retrieve a login and password pair from the vault         |
+| `store-text`             | Store arbitrary text in the vault                         |
+| `get-text`               | Retrieve text from the vault                              |
+| `store-binary`           | Store arbitrary binary data in the vault                  |
+| `get-binary`             | Retrieve binary data from the vault                       |
+| `store-card`             | Store bank card information in the vault                  |
+| `get-card`               | Retrieve bank card information from the vault             |
+| `--version`              | Display version information                               |
+| `help`                   | Display help information for all commands                 |
 
-Example:
+### Command Details
 
-```bash
-./client signUp http://localhost:8080 testName testPassword
-```
+1. **Sign Up**
 
-This will register a new user with the username `testName` and the password `testPassword`.
+    - **Description:** Register a new user.
+    - **Usage:**
+      ```bash
+      ./client signup <server_url> <username> <password>
+      ```
+    - **Example:**
+      ```bash
+      ./client signup http://localhost:8080 user1 password1
+      ```
 
-### 2. Sign In to Receive Token
+2. **Sign In**
 
-To log in and receive an authentication token, use the `signIn` command with the server URL, username, and password.
+    - **Description:** Authenticate and retrieve an access token.
+    - **Usage:**
+      ```bash
+      ./client signin <server_url> <username> <password>
+      ```
+    - **Example:**
+      ```bash
+      ./client signin http://localhost:8080 user1 password1
+      ```
 
-Example:
+3. **Create Vault**
 
-```bash
-./client signIn http://localhost:8080 testName testPassword
-```
+    - **Description:** Create a new vault entry with a key-value pair.
+    - **Usage:**
+      ```bash
+      ./client savevault <server_url> <token> <key> <value> [<vault_id>]
+      ```
+    - **Example:**
+      ```bash
+      ./client savevault http://localhost:8080 <token> key1 value1
+      ./client savevault http://localhost:8080 <token> key1 value1 vaultID123
+      ```
 
-#### Response
+4. **Get Vault**
 
-Upon successful login, you will receive a JWT token in the response, which you will need for further actions such as creating or retrieving vaults.
+    - **Description:** Retrieve a vault entry by its ID.
+    - **Usage:**
+      ```bash
+      ./client getvault <server_url> <token> <vault_id>
+      ```
+    - **Example:**
+      ```bash
+      ./client getvault http://localhost:8080 <token> vaultID123
+      ```
 
-Example response:
+5. **Upload File**
 
-```bash
-eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySUQiOiIxIn0.bMFEsrvtCxd5i3SMn3E_8HcRx6RzNfTX2PI1eWXJsbNUbeG_VaEpf9trTcm4KsYqYp_wpLzMYEYKQCtQykb4lQ
-```
+    - **Description:** Upload a binary file to the vault.
+    - **Usage:**
+      ```bash
+      ./client uploadfile <server_url> <token> <filename> <file_path> [<vault_id>]
+      ```
+    - **Example:**
+      ```bash
+      ./client uploadfile http://localhost:8080 <token> file1 /path/to/file.txt
+      ./client uploadfile http://localhost:8080 <token> file1 /path/to/file.txt vaultID123
+      ```
 
-### 3. Create a New Vault with Token
+6. **Store Login/Password Pair**
 
-To create a vault, use the `saveVault` command along with the server URL, the JWT token, a key, and a value for the vault.
+    - **Description:** Store a login and password pair in the vault.
+    - **Usage:**
+      ```bash
+      ./client store-login-password <server_url> <token> <vault_id> <login> <password>
+      ```
+    - **Example:**
+      ```bash
+      ./client store-login-password http://localhost:8080 <token> vaultID123 user1 password1
+      ```
 
-Example:
+7. **Get Login/Password Pair**
 
-```bash
-./client saveVault http://localhost:8080 "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySUQiOiIxIn0.iok4gCKCJP3d7vXMUyDFEvgZQ2-hyyk85gvHvmoGkx5-aMByqGyq8GjfNcpgY1Mc31xRn-d0BHnmy3H1kwNWXg" k1 v1
-```
+    - **Description:** Retrieve a login and password pair from the vault.
+    - **Usage:**
+      ```bash
+      ./client get-login-password <server_url> <token> <vault_id>
+      ```
+    - **Example:**
+      ```bash
+      ./client get-login-password http://localhost:8080 <token> vaultID123
+      ```
 
-In this example:
-- `k1` is the key of the vault entry.
-- `v1` is the value associated with the key `k1`.
+8. **Store Text**
 
-### 4. Get Vault with Token
+    - **Description:** Store arbitrary text in the vault.
+    - **Usage:**
+      ```bash
+      ./client store-text <server_url> <token> <vault_id> <text>
+      ```
+    - **Example:**
+      ```bash
+      ./client store-text http://localhost:8080 <token> vaultID123 "Some important text"
+      ```
 
-To retrieve a vault by its ID, use the `getVault` command along with the server URL, the JWT token, and the vault ID.
+9. **Get Text**
 
-Example:
+    - **Description:** Retrieve text from the vault.
+    - **Usage:**
+      ```bash
+      ./client get-text <server_url> <token> <vault_id>
+      ```
+    - **Example:**
+      ```bash
+      ./client get-text http://localhost:8080 <token> vaultID123
+      ```
 
-```bash
-./client getVault http://localhost:8080 "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySUQiOiIxIn0.iok4gCKCJP3d7vXMUyDFEvgZQ2-hyyk85gvHvmoGkx5-aMByqGyq8GjfNcpgY1Mc31xRn-d0BHnmy3H1kwNWXg" 1
-```
+10. **Store Binary Data**
 
-In this example:
-- `1` is the ID of the vault entry you want to retrieve.
+    - **Description:** Store arbitrary binary data (e.g., a file) in the vault.
+    - **Usage:**
+      ```bash
+      ./client store-binary <server_url> <token> <vault_id> <file_path>
+      ```
+    - **Example:**
+      ```bash
+      ./client store-binary http://localhost:8080 <token> vaultID123 /path/to/file.bin
+      ```
 
-### 5. Upload a File
+11. **Get Binary Data**
 
-To upload a binary file to the server, use the `uploadFile` command. This command can either create a new file or update an existing one if a vault ID is provided.
+    - **Description:** Retrieve binary data from the vault.
+    - **Usage:**
+      ```bash
+      ./client get-binary <server_url> <token> <vault_id>
+      ```
+    - **Example:**
+      ```bash
+      ./client get-binary http://localhost:8080 <token> vaultID123
+      ```
 
-- **To create a new file** (no ID required):
+12. **Store Card Information**
 
-  ```bash
-  ./client uploadFile http://localhost:8080 "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySUQiOiIxIn0.sJqw6MbWNmlUo2UCdJZgKB1p3opMT8HODM-m3fNzvwujH3btNT-rxMCa4ZAxNquVf38NewnyLooGGcm2Fys0DQ" filename3 ./CLIENT.md
-  ```
+    - **Description:** Store bank card information in the vault.
+    - **Usage:**
+      ```bash
+      ./client store-card <server_url> <token> <vault_id> <card_number> <expiry_date> <cvv>
+      ```
+    - **Example:**
+      ```bash
+      ./client store-card http://localhost:8080 <token> vaultID123 1234567812345678 12/25 123
+      ```
 
-  In this example:
-   - `filename3` is the name you want to assign to the uploaded file.
-   - `./CLIENT.md` is the path to the file you want to upload.
+13. **Get Card Information**
 
-- **To update an existing file** (include the vault ID):
+    - **Description:** Retrieve bank card information from the vault.
+    - **Usage:**
+      ```bash
+      ./client get-card <server_url> <token> <vault_id>
+      ```
+    - **Example:**
+      ```bash
+      ./client get-card http://localhost:8080 <token> vaultID123
+      ```
 
-  ```bash
-  ./client uploadFile http://localhost:8080 "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySUQiOiIxIn0.xDRROxL2MRA57IOhSxc1s2S-Nfkf6njT390H7GElkhL-tzRWX7hTwcgfT33X0xlyV83llKw4Usd8UG_xolRyRg" filename4 ./CLIENT.md 8
-  ```
+14. **Version Information**
 
-  In this example:
-   - `8` is the ID of the existing file you want to update.
+    - **Description:** Display version and build information of the client.
+    - **Usage:**
+      ```bash
+      ./client --version
+      ```
 
-## Summary of Commands
+15. **Help**
 
-| Command         | Description                                       | Example Usage                                                                                           |
-|-----------------|---------------------------------------------------|----------------------------------------------------------------------------------------------------------|
-| `signUp`        | Register a new user                              | `./client signUp http://localhost:8080 testName testPassword`                                           |
-| `signIn`        | Log in and get a JWT token                       | `./client signIn http://localhost:8080 testName testPassword`                                           |
-| `saveVault`     | Create a new vault entry                         | `./client saveVault http://localhost:8080 <JWT_TOKEN> k1 v1`                                            |
-| `getVault`      | Retrieve a vault entry by ID                     | `./client getVault http://localhost:8080 <JWT_TOKEN> 1`                                                 |
-| `uploadFile`    | Upload a binary file to the server or update an existing file | `./client uploadFile http://localhost:8080 <JWT_TOKEN> filename3 /home/user/CLIENT.md`  or `./client uploadFile http://localhost:8080 <JWT_TOKEN> filename4 /home/user/CLIENT.md 8` |
-
-This updated documentation should help users understand the new functionality of the `uploadFile` command and how to manage files in the vault.
+    - **Description:** Display help information for all commands.
+    - **Usage:**
+      ```bash
+      ./client help
+      ```

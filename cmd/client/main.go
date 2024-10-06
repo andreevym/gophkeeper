@@ -16,6 +16,24 @@ const (
 	resetColor   = "\033[0m"  // Reset color to default
 )
 
+var gitRef string
+var buildTime string
+var gitCommit string
+
+func printVersion() {
+	if gitRef == "" {
+		gitRef = "N/A"
+	}
+	if buildTime == "" {
+		buildTime = "N/A"
+	}
+	if gitCommit == "" {
+		gitCommit = "N/A"
+	}
+
+	fmt.Printf("GophKeeper Client\nVersion: %s\nBuild Date: %s\nBuild Commit: %s\n", gitRef, buildTime, gitCommit)
+}
+
 // Invoker defines the methods that our Client should implement.
 type Invoker interface {
 	CreateUser(login, password string) error
@@ -32,7 +50,11 @@ func main() {
 	}
 
 	cmd := strings.ToLower(os.Args[1])
-	if cmd == "help" {
+	switch cmd {
+	case "--version":
+		printVersion()
+		os.Exit(0)
+	case "help":
 		printHelp()
 		os.Exit(0)
 	}
@@ -56,6 +78,22 @@ func main() {
 		handleGetVault(c, os.Args[3:])
 	case "uploadfile":
 		handleUploadFile(c, os.Args[3:])
+	case "store-login-password":
+		handleStoreLoginPasswordVault(c, os.Args[3:])
+	case "get-login-password":
+		handleGetLoginPasswordVault(c, os.Args[3:])
+	case "store-text":
+		handleStoreTextVault(c, os.Args[3:])
+	case "get-text":
+		handleGetTextVault(c, os.Args[3:])
+	case "store-binary":
+		handleStoreBinaryVault(c, os.Args[3:])
+	case "get-binary":
+		handleGetBinaryVault(c, os.Args[3:])
+	case "store-card":
+		handleStoreCardVault(c, os.Args[3:])
+	case "get-card":
+		handleGetCardVault(c, os.Args[3:])
 	default:
 		fmt.Printf("%sError: Unknown command '%s'. Use 'help' command for usage.%s\n", errorColor, cmd, resetColor)
 	}
@@ -159,6 +197,145 @@ func printVault(v handlers.VaultResponse) {
 	fmt.Printf("%sVault operation successful: %s%s\n", successColor, string(b), resetColor)
 }
 
+// handleStoreLoginPasswordVault handles storing a login/password pair in the vault.
+func handleStoreLoginPasswordVault(invoker Invoker, args []string) {
+	if len(args) < 4 {
+		fmt.Printf("%sError: Store login/password command requires token, vault ID, login, and password.%s\n", errorColor, resetColor)
+		os.Exit(1)
+	}
+	token, vaultID, login, password := args[0], args[1], args[2], args[3]
+	key := "login/" + login
+	value := fmt.Sprintf(`{"login": "%s", "password": "%s"}`, login, password)
+
+	vault, err := invoker.NewVault(token, key, value, vaultID)
+	if err != nil {
+		fmt.Printf("%sError: Failed to store login/password in vault: %s%s\n", errorColor, err, resetColor)
+		os.Exit(1)
+	}
+	printVault(vault)
+}
+
+// handleStoreTextVault handles storing arbitrary text data in the vault.
+func handleStoreTextVault(invoker Invoker, args []string) {
+	if len(args) < 3 {
+		fmt.Printf("%sError: Store text vault command requires token, vault ID, and text.%s\n", errorColor, resetColor)
+		os.Exit(1)
+	}
+	token, vaultID, text := args[0], args[1], args[2]
+	key := "text/" + vaultID
+	value := fmt.Sprintf(`{"text": "%s"}`, text)
+
+	vault, err := invoker.NewVault(token, key, value, vaultID)
+	if err != nil {
+		fmt.Printf("%sError: Failed to store text in vault: %s%s\n", errorColor, err, resetColor)
+		os.Exit(1)
+	}
+	printVault(vault)
+}
+
+// handleGetLoginPasswordVault handles retrieving a login/password pair from the vault.
+func handleGetLoginPasswordVault(invoker Invoker, args []string) {
+	if len(args) < 2 {
+		fmt.Printf("%sError: Get login/password command requires token and vault ID.%s\n", errorColor, resetColor)
+		os.Exit(1)
+	}
+	token, vaultID := args[0], args[1]
+	vault, err := invoker.GetVault(token, vaultID)
+	if err != nil {
+		fmt.Printf("%sError: Failed to retrieve login/password from vault: %s%s\n", errorColor, err, resetColor)
+		os.Exit(1)
+	}
+	printVault(vault)
+}
+
+// handleGetTextVault handles retrieving text data from the vault.
+func handleGetTextVault(invoker Invoker, args []string) {
+	if len(args) < 2 {
+		fmt.Printf("%sError: Get text vault command requires token and vault ID.%s\n", errorColor, resetColor)
+		os.Exit(1)
+	}
+	token, vaultID := args[0], args[1]
+	vault, err := invoker.GetVault(token, vaultID)
+	if err != nil {
+		fmt.Printf("%sError: Failed to retrieve text from vault: %s%s\n", errorColor, err, resetColor)
+		os.Exit(1)
+	}
+	printVault(vault)
+}
+
+// handleGetBinaryVault handles retrieving binary data from the vault.
+func handleGetBinaryVault(invoker Invoker, args []string) {
+	if len(args) < 2 {
+		fmt.Printf("%sError: Get binary vault command requires token and vault ID.%s\n", errorColor, resetColor)
+		os.Exit(1)
+	}
+	token, vaultID := args[0], args[1]
+	vault, err := invoker.GetVault(token, vaultID)
+	if err != nil {
+		fmt.Printf("%sError: Failed to retrieve binary data from vault: %s%s\n", errorColor, err, resetColor)
+		os.Exit(1)
+	}
+	printVault(vault)
+}
+
+// handleGetCardVault handles retrieving card data from the vault.
+func handleGetCardVault(invoker Invoker, args []string) {
+	if len(args) < 2 {
+		fmt.Printf("%sError: Get card vault command requires token and vault ID.%s\n", errorColor, resetColor)
+		os.Exit(1)
+	}
+	token, vaultID := args[0], args[1]
+	vault, err := invoker.GetVault(token, vaultID)
+	if err != nil {
+		fmt.Printf("%sError: Failed to retrieve card data from vault: %s%s\n", errorColor, err, resetColor)
+		os.Exit(1)
+	}
+	printVault(vault)
+}
+
+// handleStoreBinaryVault handles storing arbitrary binary data in the vault.
+func handleStoreBinaryVault(invoker Invoker, args []string) {
+	if len(args) < 3 {
+		fmt.Printf("%sError: Store binary vault command requires token, vault ID, and file path.%s\n", errorColor, resetColor)
+		os.Exit(1)
+	}
+	token, vaultID, filePath := args[0], args[1], args[2]
+
+	fileData, err := os.ReadFile(filePath)
+	if err != nil {
+		fmt.Printf("%sError: Failed to read file %s: %s%s\n", errorColor, filePath, err, resetColor)
+		os.Exit(1)
+	}
+
+	key := "binary/" + vaultID
+	value := fmt.Sprintf(`{"file_name": "%s", "data": "%x"}`, filePath, fileData)
+
+	vault, err := invoker.NewVault(token, key, value, vaultID)
+	if err != nil {
+		fmt.Printf("%sError: Failed to store binary data in vault: %s%s\n", errorColor, err, resetColor)
+		os.Exit(1)
+	}
+	printVault(vault)
+}
+
+// handleStoreCardVault handles storing bank card data in the vault.
+func handleStoreCardVault(invoker Invoker, args []string) {
+	if len(args) < 5 {
+		fmt.Printf("%sError: Store card vault command requires token, vault ID, card number, expiry date, and CVV.%s\n", errorColor, resetColor)
+		os.Exit(1)
+	}
+	token, vaultID, cardNumber, expiryDate, cvv := args[0], args[1], args[2], args[3], args[4]
+	key := "card/" + vaultID
+	value := fmt.Sprintf(`{"card_number": "%s", "expiry_date": "%s", "cvv": "%s"}`, cardNumber, expiryDate, cvv)
+
+	vault, err := invoker.NewVault(token, key, value, vaultID)
+	if err != nil {
+		fmt.Printf("%sError: Failed to store card data in vault: %s%s\n", errorColor, err, resetColor)
+		os.Exit(1)
+	}
+	printVault(vault)
+}
+
 // printHelp displays usage information for the CLI tool.
 func printHelp() {
 	fmt.Println("GophKeeper CLI Help")
@@ -167,36 +344,87 @@ func printHelp() {
 	fmt.Println()
 	fmt.Println("1. Sign Up")
 	fmt.Println("Description: Register a new user.")
-	fmt.Println("Usage: ./client signUp <server_url> <username> <password>")
+	fmt.Println("Usage: ./client signup <server_url> <username> <password>")
 	fmt.Println("Example:")
-	fmt.Println("  ./client signUp http://localhost:8080 testName testPassword")
+	fmt.Println("  ./client signup http://localhost:8080 testName testPassword")
 	fmt.Println()
 	fmt.Println("2. Sign In")
 	fmt.Println("Description: Log in a user and retrieve an authentication token.")
-	fmt.Println("Usage: ./client signIn <server_url> <username> <password>")
+	fmt.Println("Usage: ./client signin <server_url> <username> <password>")
 	fmt.Println("Example:")
-	fmt.Println("  ./client signIn http://localhost:8080 testName testPassword")
-	fmt.Println("Response:")
-	fmt.Println("  eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySUQiOiIxIn0.bMFEsrvtCxd5i3SMn3E_8HcRx6RzNfTX2PI1eWXJsbNUbeG_VaEpf9trTcm4KsYqYp_wpLzMYEYKQCtQykb4lQ")
+	fmt.Println("  ./client signin http://localhost:8080 testName testPassword")
 	fmt.Println()
 	fmt.Println("3. Create Vault")
 	fmt.Println("Description: Create a new vault using an authentication token.")
-	fmt.Println("Usage: ./client saveVault <server_url> <token> <key> <value> [<vault_id>]")
+	fmt.Println("Usage: ./client savevault <server_url> <token> <key> <value> [<vault_id>]")
 	fmt.Println("Example:")
-	fmt.Println("  ./client saveVault http://localhost:8080 <token> k1 v1")
-	fmt.Println("  ./client saveVault http://localhost:8080 <token> k1 v1 <vault_id>")
+	fmt.Println("  ./client savevault http://localhost:8080 <token> k1 v1")
+	fmt.Println("  ./client savevault http://localhost:8080 <token> k1 v1 <vault_id>")
 	fmt.Println()
 	fmt.Println("4. Get Vault")
 	fmt.Println("Description: Retrieve vault details using an authentication token and vault ID.")
-	fmt.Println("Usage: ./client getVault <server_url> <token> <vault_id>")
+	fmt.Println("Usage: ./client getvault <server_url> <token> <vault_id>")
 	fmt.Println("Example:")
-	fmt.Println("  ./client getVault http://localhost:8080 <token> 1")
+	fmt.Println("  ./client getvault http://localhost:8080 <token> 1")
 	fmt.Println()
 	fmt.Println("5. Upload File")
 	fmt.Println("Description: Upload a binary file to the server using an authentication token.")
-	fmt.Println("Usage: ./client uploadFile <server_url> <token> <filename> <file_path> [<vault_id>]")
+	fmt.Println("Usage: ./client uploadfile <server_url> <token> <filename> <file_path> [<vault_id>]")
 	fmt.Println("Example:")
-	fmt.Println("  ./client uploadFile http://localhost:8080 <token> filename3 /home/user/file.md")
-	fmt.Println("  ./client uploadFile http://localhost:8080 <token> filename3 /home/user/file.md <vault_id>")
+	fmt.Println("  ./client uploadfile http://localhost:8080 <token> filename3 /home/user/file.md")
+	fmt.Println("  ./client uploadfile http://localhost:8080 <token> filename3 /home/user/file.md <vault_id>")
 	fmt.Println()
+	fmt.Println("6. Store Login/Password Vault")
+	fmt.Println("Description: Store a login and password pair in the vault.")
+	fmt.Println("Usage: ./client store-login-password <server_url> <token> <vault_id> <login> <password>")
+	fmt.Println("Example:")
+	fmt.Println("  ./client store-login-password http://localhost:8080 <token> 1 user1 password1")
+	fmt.Println()
+	fmt.Println("7. Get Login/Password Vault")
+	fmt.Println("Description: Retrieve a login and password pair from the vault.")
+	fmt.Println("Usage: ./client get-login-password <server_url> <token> <vault_id>")
+	fmt.Println("Example:")
+	fmt.Println("  ./client get-login-password http://localhost:8080 <token> 1")
+	fmt.Println()
+	fmt.Println("8. Store Text Vault")
+	fmt.Println("Description: Store arbitrary text data in the vault.")
+	fmt.Println("Usage: ./client store-text <server_url> <token> <vault_id> <text>")
+	fmt.Println("Example:")
+	fmt.Println("  ./client store-text http://localhost:8080 <token> 1 \"This is some text to store\"")
+	fmt.Println()
+	fmt.Println("9. Get Text Vault")
+	fmt.Println("Description: Retrieve text data from the vault.")
+	fmt.Println("Usage: ./client get-text <server_url> <token> <vault_id>")
+	fmt.Println("Example:")
+	fmt.Println("  ./client get-text http://localhost:8080 <token> 1")
+	fmt.Println()
+	fmt.Println("10. Store Binary Vault")
+	fmt.Println("Description: Store arbitrary binary data (e.g., a file) in the vault.")
+	fmt.Println("Usage: ./client store-binary <server_url> <token> <vault_id> <file_path>")
+	fmt.Println("Example:")
+	fmt.Println("  ./client store-binary http://localhost:8080 <token> 1 /path/to/file.bin")
+	fmt.Println()
+	fmt.Println("11. Get Binary Vault")
+	fmt.Println("Description: Retrieve binary data from the vault.")
+	fmt.Println("Usage: ./client get-binary <server_url> <token> <vault_id>")
+	fmt.Println("Example:")
+	fmt.Println("  ./client get-binary http://localhost:8080 <token> 1")
+	fmt.Println()
+	fmt.Println("12. Store Card Vault")
+	fmt.Println("Description: Store bank card data in the vault.")
+	fmt.Println("Usage: ./client store-card <server_url> <token> <vault_id> <card_number> <expiry_date> <cvv>")
+	fmt.Println("Example:")
+	fmt.Println("  ./client store-card http://localhost:8080 <token> 1 1234567890123456 12/24 123")
+	fmt.Println()
+	fmt.Println("13. Get Card Vault")
+	fmt.Println("Description: Retrieve bank card data from the vault.")
+	fmt.Println("Usage: ./client get-card <server_url> <token> <vault_id>")
+	fmt.Println("Example:")
+	fmt.Println("  ./client get-card http://localhost:8080 <token> 1")
+	fmt.Println()
+	fmt.Println("14. Version Information")
+	fmt.Println("Description: Get the version and build date of the client.")
+	fmt.Println("Usage: ./client --version")
+	fmt.Println("Example:")
+	fmt.Println("  ./client --version")
 }

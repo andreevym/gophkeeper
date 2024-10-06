@@ -34,7 +34,7 @@ To get started with GophKeeper, you'll need to build both the server and client 
 To build the client application, navigate to the project directory and run:
 
 ```bash
-go build -o client
+go build -o client cmd/client/main.go
 ```
 
 For more detailed instructions, refer to the [CLIENT.md](./CLIENT.md) file.
@@ -44,7 +44,7 @@ For more detailed instructions, refer to the [CLIENT.md](./CLIENT.md) file.
 To build the server application, navigate to the server directory and run:
 
 ```bash
-go build -o server
+go build -o server cmd/server/main.go
 ```
 
 For detailed instructions on configuring and running the server, check the [SERVER.md](./SERVER.md) file.
