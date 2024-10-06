@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -199,11 +200,17 @@ func printVault(v handlers.VaultResponse) {
 
 // handleStoreLoginPasswordVault handles storing a login/password pair in the vault.
 func handleStoreLoginPasswordVault(invoker Invoker, args []string) {
-	if len(args) < 4 {
-		fmt.Printf("%sError: Store login/password command requires token, vault ID, login, and password.%s\n", errorColor, resetColor)
+	if len(args) < 3 {
+		fmt.Printf("%sError: Store login/password command requires token, login, and password.%s\n", errorColor, resetColor)
 		os.Exit(1)
 	}
-	token, vaultID, login, password := args[0], args[1], args[2], args[3]
+	token, login, password := args[0], args[1], args[2]
+
+	vaultID := ""
+	if len(args) == 4 {
+		vaultID = args[3]
+	}
+
 	key := "login/" + login
 	value := fmt.Sprintf(`{"login": "%s", "password": "%s"}`, login, password)
 
@@ -218,11 +225,16 @@ func handleStoreLoginPasswordVault(invoker Invoker, args []string) {
 // handleStoreTextVault handles storing arbitrary text data in the vault.
 func handleStoreTextVault(invoker Invoker, args []string) {
 	if len(args) < 3 {
-		fmt.Printf("%sError: Store text vault command requires token, vault ID, and text.%s\n", errorColor, resetColor)
+		fmt.Printf("%sError: Store text vault command requires token key and text.%s\n", errorColor, resetColor)
 		os.Exit(1)
 	}
-	token, vaultID, text := args[0], args[1], args[2]
-	key := "text/" + vaultID
+	token, key, text := args[0], args[1], args[2]
+
+	vaultID := ""
+	if len(args) == 4 {
+		vaultID = args[3]
+	}
+	key = "text/" + key
 	value := fmt.Sprintf(`{"text": "%s"}`, text)
 
 	vault, err := invoker.NewVault(token, key, value, vaultID)
@@ -265,17 +277,24 @@ func handleGetTextVault(invoker Invoker, args []string) {
 
 // handleGetBinaryVault handles retrieving binary data from the vault.
 func handleGetBinaryVault(invoker Invoker, args []string) {
-	if len(args) < 2 {
-		fmt.Printf("%sError: Get binary vault command requires token and vault ID.%s\n", errorColor, resetColor)
+	if len(args) < 3 {
+		fmt.Printf("%sError: Get binary vault command requires token, vault ID and path for saving.%s\n", errorColor, resetColor)
 		os.Exit(1)
 	}
-	token, vaultID := args[0], args[1]
+	token, vaultID, path := args[0], args[1], args[2]
 	vault, err := invoker.GetVault(token, vaultID)
 	if err != nil {
 		fmt.Printf("%sError: Failed to retrieve binary data from vault: %s%s\n", errorColor, err, resetColor)
 		os.Exit(1)
 	}
-	printVault(vault)
+
+	bytes, err := hex.DecodeString(vault.Value)
+	err = os.WriteFile(path, bytes, 0777)
+	if err != nil {
+		fmt.Printf("%sError: Failed to write file: %s%s\n", errorColor, err, resetColor)
+		os.Exit(1)
+	}
+	fmt.Printf("%sVault %d saved successfully by path: %s%s\n", successColor, vault.ID, path, resetColor)
 }
 
 // handleGetCardVault handles retrieving card data from the vault.
@@ -296,10 +315,10 @@ func handleGetCardVault(invoker Invoker, args []string) {
 // handleStoreBinaryVault handles storing arbitrary binary data in the vault.
 func handleStoreBinaryVault(invoker Invoker, args []string) {
 	if len(args) < 3 {
-		fmt.Printf("%sError: Store binary vault command requires token, vault ID, and file path.%s\n", errorColor, resetColor)
+		fmt.Printf("%sError: Store binary vault command requires token, key, and file path.%s\n", errorColor, resetColor)
 		os.Exit(1)
 	}
-	token, vaultID, filePath := args[0], args[1], args[2]
+	token, key, filePath := args[0], args[1], args[2]
 
 	fileData, err := os.ReadFile(filePath)
 	if err != nil {
@@ -307,26 +326,37 @@ func handleStoreBinaryVault(invoker Invoker, args []string) {
 		os.Exit(1)
 	}
 
-	key := "binary/" + vaultID
-	value := fmt.Sprintf(`{"file_name": "%s", "data": "%x"}`, filePath, fileData)
+	key = "binary/" + key
+
+	value := hex.EncodeToString(fileData)
+
+	vaultID := ""
+	if len(args) == 4 {
+		vaultID = args[3]
+	}
 
 	vault, err := invoker.NewVault(token, key, value, vaultID)
 	if err != nil {
 		fmt.Printf("%sError: Failed to store binary data in vault: %s%s\n", errorColor, err, resetColor)
 		os.Exit(1)
 	}
-	printVault(vault)
+	fmt.Printf("%sVault saved successfully by id: %d%s\n", successColor, vault.ID, resetColor)
 }
 
 // handleStoreCardVault handles storing bank card data in the vault.
 func handleStoreCardVault(invoker Invoker, args []string) {
 	if len(args) < 5 {
-		fmt.Printf("%sError: Store card vault command requires token, vault ID, card number, expiry date, and CVV.%s\n", errorColor, resetColor)
+		fmt.Printf("%sError: Store card vault command requires token, key, card number, expiry date, and CVV.%s\n", errorColor, resetColor)
 		os.Exit(1)
 	}
-	token, vaultID, cardNumber, expiryDate, cvv := args[0], args[1], args[2], args[3], args[4]
-	key := "card/" + vaultID
+	token, key, cardNumber, expiryDate, cvv := args[0], args[1], args[2], args[3], args[4]
+	key = "card/" + key
 	value := fmt.Sprintf(`{"card_number": "%s", "expiry_date": "%s", "cvv": "%s"}`, cardNumber, expiryDate, cvv)
+
+	vaultID := ""
+	if len(args) == 6 {
+		vaultID = args[5]
+	}
 
 	vault, err := invoker.NewVault(token, key, value, vaultID)
 	if err != nil {

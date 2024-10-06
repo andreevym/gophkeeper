@@ -59,6 +59,10 @@ The GophKeeper Client provides a variety of commands for different tasks. Below 
       ```bash
       ./client signup http://localhost:8080 user1 password1
       ```
+    - **Result:**
+      ```bash
+      User created successfully
+      ```
 
 2. **Sign In**
 
@@ -71,19 +75,26 @@ The GophKeeper Client provides a variety of commands for different tasks. Below 
       ```bash
       ./client signin http://localhost:8080 user1 password1
       ```
+   - **Result:**
+     ```bash
+     eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySUQiOiIyIn0.58Nr9-P22PnDQ6bwugjEMsd2_86KsZxRA9nUN8AGgzbB7tHh_RS4bJv3-ejiZ61yb5Di5Awm2nCxvS7weqL9QA
+     ```
 
 3. **Create Vault**
 
     - **Description:** Create a new vault entry with a key-value pair.
     - **Usage:**
       ```bash
-      ./client savevault <server_url> <token> <key> <value> [<vault_id>]
+      ./client savevault <server_url> <token> <key> <value> [<vault_id> only for update]
       ```
     - **Example:**
       ```bash
-      ./client savevault http://localhost:8080 <token> key1 value1
-      ./client savevault http://localhost:8080 <token> key1 value1 vaultID123
+      ./client savevault http://localhost:8080 eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySUQiOiIyIn0.58Nr9-P22PnDQ6bwugjEMsd2_86KsZxRA9nUN8AGgzbB7tHh_RS4bJv3-ejiZ61yb5Di5Awm2nCxvS7weqL9QA key1 value1
       ```
+   - **Result:**
+     ```bash
+     Vault operation successful: {"id":12,"key":"key1","value":"value1","user_id":2}
+     ```
 
 4. **Get Vault**
 
@@ -94,20 +105,23 @@ The GophKeeper Client provides a variety of commands for different tasks. Below 
       ```
     - **Example:**
       ```bash
-      ./client getvault http://localhost:8080 <token> vaultID123
+      ./client getvault http://localhost:8080 eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySUQiOiIyIn0.58Nr9-P22PnDQ6bwugjEMsd2_86KsZxRA9nUN8AGgzbB7tHh_RS4bJv3-ejiZ61yb5Di5Awm2nCxvS7weqL9QA 12
       ```
+   - **Result:**
+     ```bash
+     Vault operation successful: {"id":12,"key":"key1","value":"value1","user_id":2}
+     ```
 
 5. **Upload File**
 
     - **Description:** Upload a binary file to the vault.
     - **Usage:**
       ```bash
-      ./client uploadfile <server_url> <token> <filename> <file_path> [<vault_id>]
+      ./client uploadfile <server_url> <token> <filename> <file_path> [<vault_id> only for update]
       ```
     - **Example:**
       ```bash
-      ./client uploadfile http://localhost:8080 <token> file1 /path/to/file.txt
-      ./client uploadfile http://localhost:8080 <token> file1 /path/to/file.txt vaultID123
+      ./client uploadfile http://localhost:8080 eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySUQiOiIyIn0.58Nr9-P22PnDQ6bwugjEMsd2_86KsZxRA9nUN8AGgzbB7tHh_RS4bJv3-ejiZ61yb5Di5Awm2nCxvS7weqL9QA file1 ./README.md 100
       ```
 
 6. **Store Login/Password Pair**
@@ -115,11 +129,23 @@ The GophKeeper Client provides a variety of commands for different tasks. Below 
     - **Description:** Store a login and password pair in the vault.
     - **Usage:**
       ```bash
-      ./client store-login-password <server_url> <token> <vault_id> <login> <password>
+      ./client store-login-password <server_url> <token> <login> <password> [<vault_id> only for update]
       ```
-    - **Example:**
+    - **Example create:**
       ```bash
-      ./client store-login-password http://localhost:8080 <token> vaultID123 user1 password1
+      ./client store-login-password http://localhost:8080 eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySUQiOiIyIn0.58Nr9-P22PnDQ6bwugjEMsd2_86KsZxRA9nUN8AGgzbB7tHh_RS4bJv3-ejiZ61yb5Di5Awm2nCxvS7weqL9QA user1 password1
+      ```
+    - **Result create:**
+      ```bash
+      Vault operation successful: {"id":13,"key":"login/user1","value":"{\"login\": \"user1\", \"password\": \"password1\"}","user_id":2}
+      ```
+    - Example update:
+      ```bash
+      ./client store-login-password http://localhost:8080 eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySUQiOiIyIn0.58Nr9-P22PnDQ6bwugjEMsd2_86KsZxRA9nUN8AGgzbB7tHh_RS4bJv3-ejiZ61yb5Di5Awm2nCxvS7weqL9QA user1 password2 13
+      ```
+    - **Result update:**
+      ```bash
+      Vault operation successful: {"id":13,"key":"login/user1","value":"{\"login\": \"user1\", \"password\": \"password2\"}","user_id":2}
       ```
 
 7. **Get Login/Password Pair**
@@ -131,7 +157,11 @@ The GophKeeper Client provides a variety of commands for different tasks. Below 
       ```
     - **Example:**
       ```bash
-      ./client get-login-password http://localhost:8080 <token> vaultID123
+      ./client get-login-password http://localhost:8080 eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySUQiOiIyIn0.58Nr9-P22PnDQ6bwugjEMsd2_86KsZxRA9nUN8AGgzbB7tHh_RS4bJv3-ejiZ61yb5Di5Awm2nCxvS7weqL9QA 13
+      ```
+    - **Result:**
+      ```bash
+      Vault operation successful: {"id":13,"key":"login/user1","value":"{\"login\": \"user1\", \"password\": \"password2\"}","user_id":2}
       ```
 
 8. **Store Text**
@@ -139,11 +169,23 @@ The GophKeeper Client provides a variety of commands for different tasks. Below 
     - **Description:** Store arbitrary text in the vault.
     - **Usage:**
       ```bash
-      ./client store-text <server_url> <token> <vault_id> <text>
+      ./client store-text <server_url> <token> <key> <text> [<vault_id> only for update]
       ```
-    - **Example:**
+    - **Example create:**
       ```bash
-      ./client store-text http://localhost:8080 <token> vaultID123 "Some important text"
+      ./client store-text http://localhost:8080 eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySUQiOiIyIn0.58Nr9-P22PnDQ6bwugjEMsd2_86KsZxRA9nUN8AGgzbB7tHh_RS4bJv3-ejiZ61yb5Di5Awm2nCxvS7weqL9QA k1 "Some important text"
+      ```
+    - **Result create:**
+      ```bash
+      Vault operation successful: {"id":14,"key":"text/k1","value":"{\"text\": \"Some important text\"}","user_id":2}
+      ```
+    - Example update:
+      ```bash
+      ./client store-text http://localhost:8080 eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySUQiOiIyIn0.58Nr9-P22PnDQ6bwugjEMsd2_86KsZxRA9nUN8AGgzbB7tHh_RS4bJv3-ejiZ61yb5Di5Awm2nCxvS7weqL9QA k1 "Some important text" 13
+      ```
+    - **Result update:**
+      ```bash
+      Vault operation successful: {"id":14,"key":"text/k1","value":"{\"text\": \"Some important text 2\"}","user_id":2}
       ```
 
 9. **Get Text**
@@ -155,19 +197,36 @@ The GophKeeper Client provides a variety of commands for different tasks. Below 
       ```
     - **Example:**
       ```bash
-      ./client get-text http://localhost:8080 <token> vaultID123
+      ./client get-text http://localhost:8080 eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySUQiOiIyIn0.58Nr9-P22PnDQ6bwugjEMsd2_86KsZxRA9nUN8AGgzbB7tHh_RS4bJv3-ejiZ61yb5Di5Awm2nCxvS7weqL9QA 14
+      ``` 
+    - **Result:**
+      ```bash
+      Vault operation successful: {"id":14,"key":"text/k1","value":"{\"text\": \"Some important text 2\"}","user_id":2}
       ```
+
 
 10. **Store Binary Data**
 
     - **Description:** Store arbitrary binary data (e.g., a file) in the vault.
     - **Usage:**
       ```bash
-      ./client store-binary <server_url> <token> <vault_id> <file_path>
+      ./client store-binary <server_url> <token> <key> <file_path> [<vault_id> only for update]
       ```
-    - **Example:**
+    - **Example create:**
       ```bash
-      ./client store-binary http://localhost:8080 <token> vaultID123 /path/to/file.bin
+      ./client store-binary http://localhost:8080 eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySUQiOiIyIn0.58Nr9-P22PnDQ6bwugjEMsd2_86KsZxRA9nUN8AGgzbB7tHh_RS4bJv3-ejiZ61yb5Di5Awm2nCxvS7weqL9QA clientbin ./client
+      ```
+    - **Result create:**
+      ```bash
+      Vault saved successfully by id: 18
+      ```
+    - Example update:
+      ```bash
+      ./client store-binary http://localhost:8080 eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySUQiOiIyIn0.58Nr9-P22PnDQ6bwugjEMsd2_86KsZxRA9nUN8AGgzbB7tHh_RS4bJv3-ejiZ61yb5Di5Awm2nCxvS7weqL9QA clientbin ./client 18
+      ```
+    - **Result update:**
+      ```bash
+      Vault saved successfully by id: 18
       ```
 
 11. **Get Binary Data**
@@ -175,23 +234,40 @@ The GophKeeper Client provides a variety of commands for different tasks. Below 
     - **Description:** Retrieve binary data from the vault.
     - **Usage:**
       ```bash
-      ./client get-binary <server_url> <token> <vault_id>
+      ./client get-binary <server_url> <token> <vault_id> <file_path>
       ```
     - **Example:**
       ```bash
-      ./client get-binary http://localhost:8080 <token> vaultID123
+      ./client get-binary http://localhost:8080 eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySUQiOiIyIn0.58Nr9-P22PnDQ6bwugjEMsd2_86KsZxRA9nUN8AGgzbB7tHh_RS4bJv3-ejiZ61yb5Di5Awm2nCxvS7weqL9QA 18 client2
       ```
+    - **Result:**
+      ```bash
+      Vault 18 saved successfully by path: client2
+      ```
+    - Note: The binary data is saved in the file client2 in the current directory.
 
 12. **Store Card Information**
 
     - **Description:** Store bank card information in the vault.
     - **Usage:**
       ```bash
-      ./client store-card <server_url> <token> <vault_id> <card_number> <expiry_date> <cvv>
+      ./client store-card <server_url> <token> <key> <card_number> <expiry_date> <cvv> [<vault_id> only for update]
       ```
-    - **Example:**
+    - **Example create:**
       ```bash
-      ./client store-card http://localhost:8080 <token> vaultID123 1234567812345678 12/25 123
+      ./client store-card http://localhost:8080 eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySUQiOiIyIn0.58Nr9-P22PnDQ6bwugjEMsd2_86KsZxRA9nUN8AGgzbB7tHh_RS4bJv3-ejiZ61yb5Di5Awm2nCxvS7weqL9QA tbankvisacard1 4242424242424242 12/25 123
+      ```
+    - **Result create:**
+      ```bash
+      Vault operation successful: {"id":15,"key":"card/tbankvisacard1","value":"{\"card_number\": \"4242424242424242\", \"expiry_date\": \"12/25\", \"cvv\": \"123\"}","user_id":2}
+      ```
+    - Example update:
+      ```bash
+      ./client store-card http://localhost:8080 eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySUQiOiIyIn0.58Nr9-P22PnDQ6bwugjEMsd2_86KsZxRA9nUN8AGgzbB7tHh_RS4bJv3-ejiZ61yb5Di5Awm2nCxvS7weqL9QA tbankvisacard1 4242424242424242 12/25 333 15
+      ```
+    - **Result update:**
+      ```bash
+      Vault operation successful: {"id":15,"key":"card/tbankvisacard1","value":"{\"card_number\": \"4242424242424242\", \"expiry_date\": \"12/25\", \"cvv\": \"333\"}","user_id":2}
       ```
 
 13. **Get Card Information**
@@ -203,7 +279,11 @@ The GophKeeper Client provides a variety of commands for different tasks. Below 
       ```
     - **Example:**
       ```bash
-      ./client get-card http://localhost:8080 <token> vaultID123
+      ./client get-card http://localhost:8080 eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySUQiOiIyIn0.58Nr9-P22PnDQ6bwugjEMsd2_86KsZxRA9nUN8AGgzbB7tHh_RS4bJv3-ejiZ61yb5Di5Awm2nCxvS7weqL9QA 15
+      ```
+    - **Result:**
+      ```bash
+      Vault operation successful: {"id":15,"key":"card/tbankvisacard1","value":"{\"card_number\": \"4242424242424242\", \"expiry_date\": \"12/25\", \"cvv\": \"333\"}","user_id":2}
       ```
 
 14. **Version Information**
